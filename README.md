@@ -1,3 +1,14 @@
+# Contribuidores
+
+- [Gleyson Sampaio](https://github.com/glysns)
+- [João Pedro](https://github.com/jotape-exe)
+
+# Créditos
+- [@faturputro](https://github.com/faturputro)
+
+## Template
+- [vue-shadcn-dashboard](https://github.com/faturputro/vue-shadcn-dashboard)
+
 # Setup Inical
 
 ``` bash
