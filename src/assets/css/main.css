@@ -1,0 +1,50 @@
+@import url('./index.css');
+
+body {
+  background-color: #FBFBFD;
+}
+body.dark {
+  background-color: #030711;
+}
+
+.left-placholder::before {
+  content: attr(placeholder);
+  position: relative;
+  left: 20px;
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.2s linear;
+}
+
+.fade-enter, .fade-leave-to {
+  transition: opacity 0.2s linear;
+  opacity: 0;
+}
+
+input:active, input:focus, input:blur {
+  outline: none;
+}
+.sidebar, .dashboard-main, nav {
+  transition: all 0.4s cubic-bezier(0.075, 0.82, 0.165, 1);
+  overflow-x: hidden;
+}
+.custom_scroll {
+  overflow-y: auto;
+}
+
+.custom_scroll::-webkit-scrollbar {
+  position: absolute;
+  width: 6px;
+}
+.custom_scroll::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+.custom_scroll::-webkit-scrollbar-thumb {
+  background: #999999; 
+  border-radius: 10px;
+}
+
+.sidebar.is-active {
+  left: 280px;
+}
