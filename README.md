@@ -1,3 +1,20 @@
+# Iza Pay
+
+## Sistema de Gestão de Pagamentos
+
+Este sistema foi desenvolvido para simplificar a gestão de pagamentos, oferecendo uma solução eficiente para controlar as finanças da empresa, registrar cobranças e pagamentos, gerenciar previsões de despesas e notificações, e integrar com serviços externos como plataformas de pagamento e envio de mensagens.
+
+# Contribuidores
+
+- [Gleyson Sampaio](https://github.com/glysns)
+- [João Pedro](https://github.com/jotape-exe)
+
+# Créditos
+- [@faturputro](https://github.com/faturputro)
+
+## Template
+- [vue-shadcn-dashboard](https://github.com/faturputro/vue-shadcn-dashboard)
+
 # Setup Inical
 
 ``` bash
