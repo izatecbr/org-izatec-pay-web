@@ -13,7 +13,7 @@ export interface CobrancaResponse {
     dataGeracao?: DataGeracaoResponse
     valorCobranca?: number
     valorCobrado?: number
-    codigoExteno?: string
+    codigoExterno?: string
 }
 
 export interface ConfiguracaoResponse {

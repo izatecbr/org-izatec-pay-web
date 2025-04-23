@@ -51,6 +51,15 @@ const router = createRouter({
           } as RouteMeta & IRouteMeta,
         },
         {
+          path: 'despesas',
+          name: 'despesas',
+          component: () => import('@/views/despesas/Index.vue'),
+          meta: {
+            title: 'Despesas',
+            requiresAuth: true,
+          } as RouteMeta & IRouteMeta,
+        },
+        {
           path: 'previsoes',
           name: 'previsoes',
           component: () => import('@/views/previsoes/Index.vue'),

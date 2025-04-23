@@ -20,29 +20,50 @@ const emit = defineEmits(['onEdit']);
             <TableRow>
                 <TableHead>ID</TableHead>
                 <TableHead>Nome</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Notificação Email</TableHead>
-                <TableHead>Notificação Whatsapp</TableHead>
-                <TableHead>Acões</TableHead>
+                <TableHead>Documento</TableHead>
+                <TableHead>Contato</TableHead>
+                <TableHead class=" flex items-center justify-end" >Acões</TableHead>
             </TableRow>
         </TableHeader>
         <TableBody v-if="data.length > 0">
             <TableRow v-for="row in data" :key="row.id">
                 <TableCell>{{ row?.id }}</TableCell>
                 <TableCell>{{ row?.nomeCompleto || 'Não informado' }}</TableCell>
-                <TableCell>{{ row?.email || '-' }}</TableCell>
+                <TableCell>{{ row?.documento || '-' }}</TableCell>
                 <TableCell>
-                    <Badge :variant="row.notificacao?.email ? 'default' : 'outline'">
-                        {{ row.notificacao?.email ? 'Ativo' : 'Inativo' }}
-                    </Badge>
+                    <Popover>
+                        <PopoverTrigger as-child>
+                            <Button variant="outline" size="sm">
+                                <Icon class="text-lg" icon="ph:address-book" />
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent>
+                            <div class="text-muted-foreground text-xs gap-2">
+                                <Column>
+                                    <strong>Email</strong>
+                                    <Row justify-content="space-between" align-items="center" gap="5px">
+                                        <p>{{ row?.whatsapp || 'Não informado' }}</p>
+                                        <Badge :variant="row.notificacao?.email ? 'default' : 'outline'">
+                                            {{ row.notificacao?.email ? 'Ativo' : 'Inativo' }}
+                                        </Badge>
+                                    </Row>
+                                </Column>
+                                <Column>
+                                    <strong>Número</strong>
+                                    <Row justify-content="space-between" align-items="center" gap="5px">
+                                        <p>{{ row?.email || 'Não informado' }}</p>
+                                        <Badge :variant="row.notificacao?.whatsapp ? 'default' : 'outline'">
+                                            {{ row.notificacao?.whatsapp ? 'Ativo' : 'Inativo' }}
+                                        </Badge>
+                                    </Row>
+
+                                </Column>
+                            </div>
+                        </PopoverContent>
+                    </Popover>
                 </TableCell>
                 <TableCell>
-                    <Badge :variant="row.notificacao?.whatsapp ? 'default' : 'outline'">
-                        {{ row.notificacao?.whatsapp ? 'Ativo' : 'Inativo' }}
-                    </Badge>
-                </TableCell>
-                <TableCell>
-                    <Row gap="10px">
+                    <Row gap="10px" align-items="center" justify-content="flex-end" >
                         <Popover>
                             <PopoverTrigger as-child>
                                 <Button variant="outline" size="sm">
@@ -51,10 +72,6 @@ const emit = defineEmits(['onEdit']);
                             </PopoverTrigger>
                             <PopoverContent>
                                 <div class="text-muted-foreground text-xs grid grid-cols-2 gap-2">
-                                    <Column>
-                                        <strong>Empresa</strong>
-                                        <p>{{ row?.empresa || 'Não informado' }}</p>
-                                    </Column>
                                     <Column>
                                         <strong>Avalista</strong>
                                         <p>{{ row?.avalista || 'Não informado' }}</p>
@@ -69,7 +86,7 @@ const emit = defineEmits(['onEdit']);
                         <Popover v-if="row?.endereco">
                             <PopoverTrigger as-child>
                                 <Button variant="outline" size="sm">
-                                    <Icon icon="ph:house" />
+                                    <Icon icon="ph:map-pin-line" />
                                 </Button>
                             </PopoverTrigger>
                             <PopoverContent>

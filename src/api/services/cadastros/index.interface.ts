@@ -17,6 +17,7 @@ export interface NotificacaoResponse {
 }
 
 export interface CadastroRequest {
+    id?: null
     documento?: string
     nomeCompleto: string
     email: string

@@ -1,4 +1,5 @@
 import type { AxiosInstance } from "axios"
+import type { AppResponse } from "../../../types"
 import type { DespesaDiariaRequest, DespesaPagamentoRequest, DespesaRequest } from "./index.interface"
 
 const BASE_URL = '/previsoes'
@@ -25,6 +26,10 @@ export default class PrevisoesAPI {
 
     inserir(payload: DespesaRequest | DespesaDiariaRequest): Promise<any> {
         return this.http.post(`${BASE_URL}`, payload)
+    }
+
+    listarDespesas(id: number): Promise<AppResponse<any>>{
+        return this.http.get(`${BASE_URL}/${id}/despesas`)
     }
 
     inserirPagamento(payload: DespesaPagamentoRequest): Promise<any> {

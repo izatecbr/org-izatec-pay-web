@@ -69,7 +69,7 @@ const dateModel: any = computed<any>({
                       'LLL dd, y',
                     )}`
                   : format(dateModel.start, 'LLL dd, y')
-                : 'Pick a date'
+                : 'Selecionar data'
             }}
           </span>
         </Button>

@@ -5,20 +5,20 @@ import Row from '@/components/core/Row.vue'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader
+    Card,
+    CardContent,
+    CardFooter,
+    CardHeader
 } from '@/components/ui/card'
 import { PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import Popover from '@/components/ui/popover/Popover.vue'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useToast } from '@/components/ui/toast'
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { BadgeVariant } from '@/constants/ui/badge-variants.interface'
 import { cn } from '@/lib/utils'
@@ -127,7 +127,7 @@ const copy = async (text: string) => {
     <CardContent :class="'p-1.5 grid gap-1.5'">
       <Row justify-content="space-between">
         <Column>
-          <label class="text-xs" for="data-vencimento">Vencimento</label>
+          <label class="text-xs" for="data-vencimento">Prox. Vencto.</label>
           <p id="data-vencimento" class="font-bold">{{ Utils.formatDateToBR(item.dataVencimento.dataHora) }}</p>
         </Column>
         <Column align-items="flex-end">

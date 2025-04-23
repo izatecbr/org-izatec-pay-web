@@ -2,7 +2,7 @@ import { format, parseISO } from "date-fns";
 
 export default class Utils {
 
-    static formatDateISO(date: Date): string {
+    static formatDateISO(date: any): string {
         if (!date) {
             return ''
         }
@@ -43,12 +43,25 @@ export default class Utils {
         const formattedDate = format(parseISO(dateString), 'dd/MM/yyyy');
         return formattedDate;
     };
-
     static jwtToObject = (token: string | null) => {
         if (!token) {
-            return null
+            return null;
         }
-        return JSON.parse(atob(token.split(".")[1]));
+
+        try {
+            const base64Url = token.split(".")[1];
+            const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+            const jsonPayload = decodeURIComponent(
+                atob(base64)
+                    .split("")
+                    .map((c) => `%${c.charCodeAt(0).toString(16).padStart(2, "0")}`)
+                    .join("")
+            );
+            return JSON.parse(jsonPayload);
+        } catch (error) {
+            console.error("Failed to parse JWT", error);
+            return null;
+        }
     };
 
     static removeCharacters = (str: string) => {
@@ -63,7 +76,9 @@ export default class Utils {
         return num ? num.toFixed(2) : '0.00'
     }
 
-    static moneyMaskToNumber = (valor: string) => {
+    static moneyMaskToNumber = (valor: any) => {
+        if (!valor) return 0.0
+        valor = valor.toString()
         return valor ? Number(valor.replace(/\D/g, '').replace(/(\d+)(\d{2})/, '$1.$2')) : 0.0
     }
 
@@ -122,6 +137,16 @@ export default class Utils {
         if (!str) return '';
         return str.length > length ? str.substring(0, length) + '...' : str;
     }
+
+    static cleanParams = (params: any) => {
+        for (const key in params) {
+            if ([undefined, "", null].includes(params[key])) {
+                delete params[key];
+            }
+        }
+        return params;
+    }
+
 
 
 }

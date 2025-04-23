@@ -6,7 +6,7 @@ import PagamentosSheet from '@/components/core/pagamentos/PagamentosSheet.vue';
 import PagamentosTable from '@/components/core/pagamentos/PagamentosTable.vue';
 import Row from '@/components/core/Row.vue';
 import { Button } from '@/components/ui/button';
-import { DateRangePicker } from '@/components/ui/daterange-picker';
+import { DatePicker } from "@/components/ui/date-picker";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from "@/components/ui/toast";
@@ -14,18 +14,15 @@ import { useResponsive } from "@/composables/useResponsive";
 import { BadgeVariant } from '@/constants/ui/badge-variants.interface';
 import Utils from '@/utils/index';
 import { Icon } from '@iconify/vue';
-import { onMounted, ref } from "vue";
+import { onMounted, ref,watch } from "vue";
 
 
 const { toast } = useToast()
 const { pagamentos } = useAPI()
 const { isDesktop } = useResponsive();
 
-const status = ref(BadgeVariant.COMPENSADO.value)
-const date = ref({
-  start: new Date(),
-  end: new Date()
-})
+const status = ref(BadgeVariant.GERADO.value)
+const date = ref<any>(new Date())
 const sheetOpen = ref(false)
 const pagamentosData = ref([])
 const loading = ref(false)
@@ -41,14 +38,20 @@ const fetchPagamentos = async () => {
   loading.value = true
 
   const params = {
-    dataInicio: Utils.formatDateISO(date.value.start),
-    dataFim: Utils.formatDateISO(date.value.end),
+    dataInicio: Utils.formatDateISO(date.value),
+    dataFim: Utils.formatDateISO(date.value),
     status: status.value
   }
-  const { body } = await pagamentos.listagem(params)
+  const { body } = await pagamentos.listagem(Utils.cleanParams(params))
   pagamentosData.value = body ?? []
   loading.value = false
 }
+
+const clearDataInput = async () => {
+    date.value = undefined
+    await fetchPagamentos()
+}
+
 
 const submit = async (payload: any) => {
   loadingForm.value = true
@@ -72,6 +75,11 @@ const submit = async (payload: any) => {
 onMounted(async () => {
   await fetchPagamentos()
 })
+
+
+watch(date, async ()=>{
+  await fetchPagamentos()
+})
 </script>
 
 <template>
@@ -81,11 +89,11 @@ onMounted(async () => {
     <Tabs :default-value="status" class="space-y-4">
       <Row flex-wrap="wrap" gap="10px" justify-content="space-between" class="w-full relative">
         <TabsList>
-          <TabsTrigger @click="changeStatus(BadgeVariant.COMPENSADO.value)" :value="BadgeVariant.COMPENSADO.value">
-            Compensado
-          </TabsTrigger>
           <TabsTrigger @click="changeStatus(BadgeVariant.GERADO.value)" :value="BadgeVariant.GERADO.value">
             Gerado
+          </TabsTrigger>
+          <TabsTrigger @click="changeStatus(BadgeVariant.COMPENSADO.value)" :value="BadgeVariant.COMPENSADO.value">
+            Compensado
           </TabsTrigger>
           <!-- <TabsTrigger @click="changeStatus(BadgeVariant.EXPIRADO.value)" :value="BadgeVariant.EXPIRADO.value">
             Expirado
@@ -95,11 +103,12 @@ onMounted(async () => {
           </TabsTrigger> -->
         </TabsList>
         <Row gap="10px" flex-wrap="wrap">
-          <DateRangePicker :loading="loading" v-model="date" />
-          <Button :loading="loading" @click="fetchPagamentos()" variant="outline">
-            <Icon class="mr-2" icon="lucide:funnel" />
-            Buscar
-          </Button>
+          <Row gap="2px">
+                <DatePicker :loading="loading" v-model="date" />
+                <!-- <Button v-if="date" @click="clearDataInput()" variant="destructive">
+                    <Icon class="text-lg" icon="ph:calendar-slash" />
+                </Button> -->
+            </Row>
           <PagamentosSheet titulo="Novo Pagamento" v-model="sheetOpen">
             <Button @click="sheetOpen = true" variant="outline">
               Novo

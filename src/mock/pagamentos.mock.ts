@@ -13,7 +13,7 @@ export const pagamentoMock = [
             "cnpj": "57146962000170",
             "nomeFantasia": "IZATEC - TREINAMENTO E CONSULTORIA EM SISTEMAS"
         },
-        "codigoExteno": "27",
+        "codigoExterno": "27",
         "codigoIdentificacao": "57146962abc123400000000272503261110",
         "dataVencimento": {
             "dia": "2025-03-27",
@@ -49,7 +49,7 @@ export const pagamentoMock = [
             "cnpj": "57146962000170",
             "nomeFantasia": "IZATEC - TREINAMENTO E CONSULTORIA EM SISTEMAS"
         },
-        "codigoExteno": "27",
+        "codigoExterno": "27",
         "codigoIdentificacao": "57146962abc123400000000272503261110",
         "dataVencimento": {
             "dia": "2025-03-27",
@@ -85,7 +85,7 @@ export const pagamentoMock = [
             "cnpj": "57146962000170",
             "nomeFantasia": "IZATEC - TREINAMENTO E CONSULTORIA EM SISTEMAS"
         },
-        "codigoExteno": "27",
+        "codigoExterno": "27",
         "codigoIdentificacao": "57146962abc123400000000272503261110",
         "dataVencimento": {
             "dia": "2025-03-27",
@@ -121,7 +121,7 @@ export const pagamentoMock = [
             "cnpj": "57146962000170",
             "nomeFantasia": "IZATEC - TREINAMENTO E CONSULTORIA EM SISTEMAS"
         },
-        "codigoExteno": "27",
+        "codigoExterno": "27",
         "codigoIdentificacao": "57146962abc123400000000272503261110",
         "dataVencimento": {
             "dia": "2025-03-27",
@@ -157,7 +157,7 @@ export const pagamentoMock = [
             "cnpj": "57146962000170",
             "nomeFantasia": "IZATEC - TREINAMENTO E CONSULTORIA EM SISTEMAS"
         },
-        "codigoExteno": "27",
+        "codigoExterno": "27",
         "codigoIdentificacao": "57146962abc123400000000272503261110",
         "dataVencimento": {
             "dia": "2025-03-27",
@@ -193,7 +193,7 @@ export const pagamentoMock = [
             "cnpj": "57146962000170",
             "nomeFantasia": "IZATEC - TREINAMENTO E CONSULTORIA EM SISTEMAS"
         },
-        "codigoExteno": "27",
+        "codigoExterno": "27",
         "codigoIdentificacao": "57146962abc123400000000272503261110",
         "dataVencimento": {
             "dia": "2025-03-27",
@@ -229,7 +229,7 @@ export const pagamentoMock = [
             "cnpj": "57146962000170",
             "nomeFantasia": "IZATEC - TREINAMENTO E CONSULTORIA EM SISTEMAS"
         },
-        "codigoExteno": "27",
+        "codigoExterno": "27",
         "codigoIdentificacao": "57146962abc123400000000272503261110",
         "dataVencimento": {
             "dia": "2025-03-27",
@@ -265,7 +265,7 @@ export const pagamentoMock = [
             "cnpj": "57146962000170",
             "nomeFantasia": "IZATEC - TREINAMENTO E CONSULTORIA EM SISTEMAS"
         },
-        "codigoExteno": "27",
+        "codigoExterno": "27",
         "codigoIdentificacao": "57146962abc123400000000272503261110",
         "dataVencimento": {
             "dia": "2025-03-27",
@@ -301,7 +301,7 @@ export const pagamentoMock = [
             "cnpj": "57146962000170",
             "nomeFantasia": "IZATEC - TREINAMENTO E CONSULTORIA EM SISTEMAS"
         },
-        "codigoExteno": "27",
+        "codigoExterno": "27",
         "codigoIdentificacao": "57146962abc123400000000272503261110",
         "dataVencimento": {
             "dia": "2025-03-27",

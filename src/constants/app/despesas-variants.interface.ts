@@ -1,53 +1,56 @@
 export const DespesasVariant: any = {
-    'Moradia': [
-        'Aluguel',
-        'Condomínio',
-        'Conservação de Gás',
-        'Energia',
-        'Água',
-        'Internet',
-        'Segurança'
+    "Moradia": [
+        "Aluguel",
+        "Água",
+        "Condomínio",
+        "Conservação",
+        "Energia",
+        "Gás",
+        "Internet",
+        "Segurança"
     ],
-    'Supermercado': [
-        'Alimentação',
-        'Limpeza',
-        'Higiene',
-        'Bebidas'
+    "Supermercado": [
+        "Alimentação",
+        "Bebidas",
+        "Higiene",
+        "Limpeza"
     ],
-    'Transporte': [
-        'Locação',
-        'Combustível',
-        'Revisão'
+    "Transporte": [
+        "Combustível",
+        "Locação",
+        "Revisão"
     ],
-    'Lazer': [
-        'Restaurante',
-        'Viagens',
-        'Passeios'
+    "Lazer": [
+        "Entretenimento",
+        "Passeios",
+        "Restaurante",
+        "Viagens"
     ],
-    'Investimento': [
-        'Imóveis',
-        'Saúde',
-        'Educação',
-        'Vestuário',
-        'Transporte',
-        'Lazer'
+    "Investimento": [
+        "Educação",
+        "Imóveis",
+        "Saúde",
+        "Transporte",
+        "Vestuário"
     ],
-    'Negóscios': [
-        'Aluguel',
-        'Condomínio',
-        'Conservação de Gás',
-        'Energia',
-        'Água',
-        'Internet',
-        'Equipamentos',
-        'Suprimentos',
-        'Contabilidade',
-        'Funcionários',
-        'Terceiros',
-        'Transporte',
-        'Refeição'
+    "Negócios": [
+        "Acessórios",
+        "Aluguel",
+        "Água",
+        "Conservação",
+        "Contabilidade",
+        "Energia",
+        "Equipamentos",
+        "Funcionários",
+        "Gás",
+        "Impostos",
+        "Internet",
+        "Mercadorias",
+        "Refeição",
+        "Suprimentos",
+        "Terceiros",
+        "Transporte"
     ]
 }
-
 
 export type DespesasVariantType = keyof typeof DespesasVariant;

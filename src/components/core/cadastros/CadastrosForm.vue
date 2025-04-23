@@ -7,7 +7,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { MaskaPattern } from '@/constants/ui/input-patterns.interface';
 import Utils from '@/utils/index';
 import { Icon } from '@iconify/vue';
-import { defineProps, ref } from 'vue';
+import { ref } from 'vue';
 
 const props = defineProps({
     modelValue: {
@@ -156,7 +156,7 @@ const submitForm = async () => {
             </div>
 
             <div class="col-span-12 sm:col-span-3">
-                <Input v-model="form.endereco.numero" :min="1" type="number" label="Número" placeholder="Número" />
+                <Input v-model="form.endereco.numero" label="Número" placeholder="Número" />
             </div>
 
             <div class="col-span-12">

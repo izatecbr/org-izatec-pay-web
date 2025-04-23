@@ -68,7 +68,14 @@ const openNewForm = () => {
 
 const handleEdit = (value: any) => {
     formMode.value = 'edit';
-    form.value = value;
+    form.value = {
+        ...value,
+        endereco: value?.endereco ?? {
+            cep: "",
+            numero: "",
+            logradouro: ""
+        }
+    };
     sheetOpen.value = true;
 };
 

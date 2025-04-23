@@ -128,7 +128,7 @@ const copy = async (text: string) => {
     <CardContent :class="'p-1.5 grid gap-1.5'">
       <Row justify-content="space-between">
         <Column>
-          <label class="text-xs" for="data-vencimento">Vencimento</label>
+          <label class="text-xs" for="data-vencimento">Prox. Vencto.</label>
           <p id="data-vencimento" class="font-bold">{{ Utils.formatDateToBR(item.dataVencimento.dataHora) }}</p>
         </Column>
         <Column align-items="flex-end">

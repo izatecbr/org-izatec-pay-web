@@ -3,6 +3,7 @@ import { TOKEN_STORAGE_KEY } from "../constants/storage/token"
 import AcessoAPI from "./services/acesso/AcessoAPI"
 import CadastroAPI from "./services/cadastros/CadastroAPI"
 import CobrancaAPI from "./services/cobrancas/CobrancaAPI"
+import DespesasAPI from "./services/despesas/DespesaAPI"
 import NotificacoesAPI from "./services/notificacoes/NotificacoesAPI"
 import PagamentosAPI from "./services/pagamentos/PagamentosAPI"
 import PublicPagamentosAPI from "./services/pagamentos/PublicPagamentosAPI"
@@ -15,7 +16,8 @@ export interface IServices {
     pagamentos: PagamentosAPI,
     publicPagamentos: PublicPagamentosAPI,
     cadastros: CadastroAPI,
-    notificacoes: NotificacoesAPI
+    notificacoes: NotificacoesAPI,
+    despesas: DespesasAPI
 }
 
 export const useHttpClient = () => {
@@ -74,7 +76,8 @@ export const useAPI = () => {
         pagamentos: new PagamentosAPI(api),
         publicPagamentos: new PublicPagamentosAPI(api),
         cadastros: new CadastroAPI(api),
-        notificacoes: new NotificacoesAPI(api)
+        notificacoes: new NotificacoesAPI(api),
+        despesas: new DespesasAPI(api),
     }
 
     return services

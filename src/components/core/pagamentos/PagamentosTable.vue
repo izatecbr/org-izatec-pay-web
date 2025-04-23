@@ -8,10 +8,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/components/ui/toast';
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { BadgeVariant } from '@/constants/ui/badge-variants.interface';
 import Utils from '@/utils/index';
@@ -69,7 +69,7 @@ const copy = async (text: string) => {
         <TableHead>Nome do Sacado</TableHead>
         <TableHead>Descrição</TableHead>
         <TableHead>Dt. Geração</TableHead>
-        <TableHead>Dt. Venc</TableHead>
+        <TableHead>Prox. Vencto.</TableHead>
         <TableHead>Status</TableHead>
         <!--<TableHead>Código Ext.</TableHead> -->
         <TableHead>Valor</TableHead>
@@ -89,7 +89,7 @@ const copy = async (text: string) => {
             {{ row.status?.id || '-' }}
           </Badge>
         </TableCell>
-        <!--<TableCell>{{ row.codigoExteno || '-' }}</TableCell> -->
+        <!--<TableCell>{{ row.codigoExterno || '-' }}</TableCell> -->
         <TableCell>{{ Utils.formatToBRL(row.valor.original) || '-' }}</TableCell>
         <TableCell>{{ row.parcela || '-' }}</TableCell>
         <TableCell>
@@ -113,7 +113,7 @@ const copy = async (text: string) => {
                 </div>
               </PopoverContent>
             </Popover>
-            <Popover v-if="row.integracao.conteudo">
+            <Popover v-if="row.integracao?.conteudo">
               <PopoverTrigger as-child>
                 <Button v-if="row?.codigoIdentificacao" size="sm" @click="exibirQrCode(row.id)"
                   :loading="loading[row.id]" variant="outline">

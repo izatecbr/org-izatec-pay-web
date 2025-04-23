@@ -4,42 +4,30 @@ import NotificacoesItemList from "@/components/core/notificacoes/NotificacoesIte
 import NotificacoesTable from "@/components/core/notificacoes/NotificacoesTable.vue";
 import Row from '@/components/core/Row.vue';
 import { Button } from '@/components/ui/button';
-import { DateRangePicker } from '@/components/ui/daterange-picker';
+import { DatePicker } from "@/components/ui/date-picker";
 import { Tabs } from '@/components/ui/tabs';
-import { useToast } from "@/components/ui/toast";
 import { useResponsive } from "@/composables/useResponsive";
 import { BadgeVariant } from '@/constants/ui/badge-variants.interface';
 import Utils from '@/utils/index';
 import { Icon } from '@iconify/vue';
-import { onMounted, ref } from "vue";
+import { onMounted, ref,watch } from "vue";
 
 
-const { toast } = useToast()
 const { pagamentos } = useAPI()
 const { isDesktop } = useResponsive();
 
 const status = ref(BadgeVariant.GERADO.value)
-const date = ref({
-  start: new Date(),
-  end: new Date()
-})
-const sheetOpen = ref(false)
+const date = ref<any>(new Date())
+
 const pagamentosData = ref([])
 const loading = ref(false)
-const loadingForm = ref(false)
-const form = ref<any>(null)
-
-const changeStatus = (value: any) => {
-  status.value = value
-  fetchPagamentos()
-}
 
 const fetchPagamentos = async () => {
   loading.value = true
 
   const params = {
-    dataInicio: Utils.formatDateISO(date.value.start),
-    dataFim: Utils.formatDateISO(date.value.end),
+    dataInicio: Utils.formatDateISO(date?.value),
+    dataFim: Utils.formatDateISO(date?.value),
     status: status.value
   }
   const { body } = await pagamentos.listagem(params)
@@ -47,26 +35,16 @@ const fetchPagamentos = async () => {
   loading.value = false
 }
 
-const submit = async (payload: any) => {
-  loadingForm.value = true
-  const { status, success } = await pagamentos.inserir(payload)
-
-  toast({
-    title: status.message,
-    description: status?.suggestion || '',
-    variant: success ? 'default' : 'destructive',
-    duration: 1300,
-  });
-
-  if (success) {
-    sheetOpen.value = false
-    form.value = null
-    fetchPagamentos()
-  }
-  loadingForm.value = false
+const clearDataInput = async () => {
+    date.value = undefined
+    await fetchPagamentos()
 }
 
 onMounted(async () => {
+  await fetchPagamentos()
+})
+
+watch(date, async ()=>{
   await fetchPagamentos()
 })
 </script>
@@ -76,13 +54,18 @@ onMounted(async () => {
     <page-header title="Notificações" />
 
     <Tabs :default-value="status" class="space-y-4">
-      <Row flex-wrap="wrap" gap="10px" justify-content="space-between" class="w-full relative">
+      <Row flex-wrap="wrap" gap="10px" justify-content="flex-end" class="w-full relative">
         <Row gap="10px" flex-wrap="wrap">
-          <DateRangePicker :loading="loading" v-model="date" />
-          <Button :loading="loading" @click="fetchPagamentos()" variant="outline">
+          <Row gap="2px">
+                <DatePicker :loading="loading" v-model="date" />
+                <!-- <Button v-if="date" @click="clearDataInput()" variant="destructive">
+                    <Icon class="text-lg" icon="ph:calendar-slash" />
+                </Button> -->
+            </Row>
+          <!--<Button :loading="loading" @click="fetchPagamentos()" variant="outline">
             <Icon class="mr-2" icon="lucide:funnel" />
             Buscar
-          </Button>
+          </Button> -->
         </Row>
       </Row>
 

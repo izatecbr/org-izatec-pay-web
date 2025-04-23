@@ -14,6 +14,7 @@ import type { JwtReponse } from '@/constants/storage/jwt-reponse.interface';
 import { TOKEN_STORAGE_KEY } from '@/constants/storage/token';
 import { useAppStore } from '@/stores/app';
 import Utils from '@/utils';
+import { truncate } from 'lodash-es';
 import {
   LogOut,
   Menu,
@@ -73,7 +74,9 @@ onMounted(() => {
               <AvatarFallback>{{ Utils.getUserInitials(user?.sub) }}</AvatarFallback>
             </Avatar>
             <span class="ml-2 hidden md:flex justify-start flex-col items-start">
-              <p class="mb-0">{{ user?.sub }}</p>
+              <p class="mb-0">{{ truncate(user?.sub, {
+                length: 14
+              }) }}</p>
               <small class="text-xs text-slate-400 font-light">{{ Utils.maskCpfCnpj(user?.cpfCnpj) }}</small>
             </span>
           </Button>

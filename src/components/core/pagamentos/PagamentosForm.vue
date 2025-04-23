@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useAPI } from '@/api/http-client';
+import AppCombobox from '@/components/common/app-combobox/AppCombobox.vue';
 import { InputMoney } from '@/components/common/input-money';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -8,7 +9,7 @@ import { SacadoState, type SacadoStateType } from '@/constants/app/sacado-state.
 import { TOKEN_STORAGE_KEY } from '@/constants/storage/token';
 import Utils from '@/utils/index';
 import { debounce } from 'lodash-es';
-import { computed, ref, watchEffect } from 'vue';
+import { ref, watchEffect } from 'vue';
 
 const { cadastros } = useAPI()
 
@@ -56,49 +57,57 @@ const form = ref(Utils.clone(props.modelValue || {
 }));
 
 const buscaSacadoLoading = ref(false)
-
+const sacado = ref<any>(undefined)
+const inputSelect = ref<any>(undefined)
+const sacadoOptions = ref([])
+const cadastrosList = ref<any[]>([])
 const sacadoState = ref<SacadoStateType>(SacadoState.EMPTY)
-const cadastroExist = computed(() => sacadoState.value == SacadoState.EXIST)
-const cadastroNotExist = computed(() => sacadoState.value == SacadoState.NOT_EXIST)
 
 function getCodigoIdenticacao() {
     const jwt: any = localStorage.getItem(TOKEN_STORAGE_KEY) || null
     return Utils.jwtToObject(jwt)?.codigoIntegracao
 }
 
-const canSubmit = computed(() => {
-    const invalidMoneyInput = [null, undefined, "", 0,]
-    return form.value.sacado?.documento != '' && form.value.sacado?.nomeCompleto != '' && form.value.titulo != "" && !invalidMoneyInput.includes(form.value.valor)
-})
+const buscarCadastroFiltro = debounce(async (value: InputEvent) => {
 
-const buscarCadastroPorCPF = debounce(async (value: string) => {
     buscaSacadoLoading.value = true
-    const { body, success, status } = await cadastros.listagemCpfCnpj(Utils.removeCharacters(value) || '')
+    const { body, success, status } = await cadastros.listagemNome(value.data)
     buscaSacadoLoading.value = false
     if (body) {
+        cadastrosList.value = body ?? []
+        sacadoOptions.value = body.map((item: any) => {
+            return {
+                value: item.id,
+                label: `${item.nomeCompleto}${item?.documento ? ` - ${item?.documento}` : ''}`
+            }
+        }) ?? []
         sacadoState.value = SacadoState.EXIST
-        form.value.sacado.nomeCompleto = body?.nomeCompleto ?? ''
-        form.value.sacado.whatsapp = `${body.whatsapp ?? ''}`
-        form.value.sacado.email = body?.email ?? ''
     } else {
         sacadoState.value = SacadoState.NOT_EXIST
     }
 
 }, 500)
 
+function onSearchInput(value: InputEvent) {
+    sacado.value = value;
+    buscarCadastroFiltro(value);
+}
+
 watchEffect(() => {
-    if (form.value.sacado.documento) {
-        buscarCadastroPorCPF(form.value.sacado.documento)
+    if (inputSelect.value) {
+        buscarCadastroFiltro(sacado.value)
     }
 
-    if (form.value.sacado.documento === '') {
-        form.value.sacado.nomeCompleto = ''
-        form.value.sacado.whatsapp = ''
-        form.value.sacado.email = ''
-        sacadoState.value = SacadoState.EMPTY
+    if (sacado?.value) {
+        const cadastroSelecionado = cadastrosList.value.find((item: any) => item.id == sacado?.value)
+
+        form.value.sacado.nomeCompleto = cadastroSelecionado?.nomeCompleto ?? ''
+        form.value.sacado.whatsapp = cadastroSelecionado?.whatsapp ?? ''
+        form.value.sacado.documento = cadastroSelecionado?.documento ?? ''
+        form.value.sacado.email = cadastroSelecionado?.email ?? ''
+
     }
 })
-
 
 const submitForm = async () => {
     if (form.value?.sacado?.documento) {
@@ -137,25 +146,29 @@ const submitForm = async () => {
     <form @submit.prevent="submitForm" class="grid grid-cols-12 gap-3">
 
         <Card class="col-span-12 grid grid-cols-12 gap-2 p-1">
-                <span class="col-span-12 text-xs text-muted-foreground">Sacado</span>
+            <span class="col-span-12 text-xs text-muted-foreground">Sacado</span>
 
-                <div class="col-span-6 sm:col-span-6">
+            <div class="col-span-12 flex">
+                <AppCombobox class="w-full" button-class="w-full" popover-class="w-[37.4dvw]"
+                    placeholder="Selecionar sacado" :loading="buscaSacadoLoading"
+                    placeholder-input="Busque por nome ou documento." :options="sacadoOptions" :input="inputSelect"
+                    v-model="sacado" @update:input="onSearchInput" />
+                <!--<Button v-if="sacado" variant="ghost" @click="sacado = null">
+                    <Icon icon="ph:x" />
+                </Button> -->
+
+            </div>
+
+            <!--<div class="col-span-6 sm:col-span-6">
                     <Input v-model="form.sacado.documento" label="Documento"
                         placeholder="CPF\CNPJ\RG" />
                 </div>
 
                 <div class="col-span-6 sm:col-span-6">
                     <Input v-model="form.sacado.nomeCompleto" label="Nome Completo" placeholder="Nome Completo" />
-                </div>
+                </div> -->
 
-                <div class="col-span-6 sm:col-span-6">
-                    <Input v-model="form.sacado.email" type="email" label="Email" placeholder="Email" />
-                </div>
-
-                <div class="col-span-6 sm:col-span-6">
-                    <Input v-model="form.sacado.whatsapp" label="ex: 11 9 889891123" placeholder="Whatsapp" />
-                </div>
-            </Card>
+        </Card>
 
         <Card class="col-span-12 grid grid-cols-12 gap-2 p-1">
             <span class="col-span-12 text-xs text-muted-foreground">Detalhe</span>
@@ -175,7 +188,8 @@ const submitForm = async () => {
 
             <div class="col-span-6 sm:col-span-4">
                 <label for="hora" class="text-xs text-muted-foreground">Hora</label>
-                <Input id="hora" v-model="form.vencimento.hora" label="Hora Vencimento" type="time" placeholder="Hora Venct" />
+                <Input id="hora" v-model="form.vencimento.hora" label="Hora Vencimento" type="time"
+                    placeholder="Hora Venct" />
             </div>
 
         </Card>

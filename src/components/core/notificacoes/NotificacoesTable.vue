@@ -52,7 +52,7 @@ const notificar = async (id: any, tipo: string) => {
                 <TableHead>Nome do Sacado</TableHead>
                 <TableHead>Descrição</TableHead>
                 <TableHead>Dt. Geração</TableHead>
-                <TableHead>Dt. Venc</TableHead>
+                <TableHead>Prox. Vencto.</TableHead>
                 <TableHead>Status</TableHead>
                 <!--<TableHead>Código Ext.</TableHead> -->
                 <TableHead>Valor</TableHead>
@@ -72,7 +72,7 @@ const notificar = async (id: any, tipo: string) => {
                         {{ row.status?.id || '-' }}
                     </Badge>
                 </TableCell>
-                <!--<TableCell>{{ row.codigoExteno || '-' }}</TableCell> -->
+                <!--<TableCell>{{ row.codigoExterno || '-' }}</TableCell> -->
                 <TableCell>{{ Utils.formatToBRL(row.valor.original) || '-' }}</TableCell>
                 <TableCell>{{ row.parcela || '-' }}</TableCell>
                 <TableCell>

@@ -1,6 +1,6 @@
 export interface PagamentoRequest {
     codigoIdentificacao: string
-    codigoExteno: string
+    codigoExterno: string
     parcela: number
     valor: number
     mensagem: string

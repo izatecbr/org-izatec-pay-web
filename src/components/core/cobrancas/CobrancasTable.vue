@@ -52,7 +52,7 @@ const listarPagamentos = async (id: number, titulo: string) => {
                 <TableHead>Título</TableHead>
                 <TableHead>R$ Cobrança</TableHead>
                 <TableHead>R$ Cobrado</TableHead>
-                <TableHead>Vencimento</TableHead>
+                <TableHead>Prox. Vencto.</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Detalhe</TableHead>
             </TableRow>

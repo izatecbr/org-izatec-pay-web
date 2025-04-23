@@ -1,14 +1,47 @@
 <script setup lang="ts">
+import { useAPI } from '@/api/http-client';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useToast } from '@/components/ui/toast';
 import { CobrancaStatusVariant } from '@/constants/ui/cobranca-status-variant.interface';
 import Utils from '@/utils';
 import { Icon } from '@iconify/vue';
+import { ref } from 'vue';
 import Column from '../Column.vue';
+import PrevisoesDespesasList from './PrevisoesDespesasList.vue';
+import PrevisoesDespesasSheet from './PrevisoesDespesasSheet.vue';
 
 const props = defineProps(['data'])
+
+const { previsoes } = useAPI()
+
+const { toast } = useToast()
+
+const sheetOpen = ref(false)
+const loading = ref<{ [key: number]: any }>({})
+const despesas = ref(null)
+const tituloCobranca = ref('')
+
+const handleListarDespesas = async (id: number, titulo: string) => {
+    loading.value[id] = true
+    const { status, success, body } = await previsoes.listarDespesas(id)
+    if (success) {
+        despesas.value = body
+        tituloCobranca.value = `${titulo} - ${id}`
+        sheetOpen.value = true
+    } else {
+        toast({
+            title: status.message,
+            description: status?.suggestion || '',
+            variant: success ? 'default' : 'destructive',
+            duration: 1300,
+        });
+    }
+    loading.value[id] = false
+}
+
 </script>
 
 <template>
@@ -17,7 +50,7 @@ const props = defineProps(['data'])
             <TableRow>
                 <TableHead>Título</TableHead>
                 <TableHead>Dt. Geração</TableHead>
-                <TableHead>Dt. Venc</TableHead>
+                <TableHead>Prox. Vencto.</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Favorecido</TableHead>
                 <TableHead>R$ Despesa</TableHead>
@@ -64,11 +97,11 @@ const props = defineProps(['data'])
                 <TableCell>{{ Utils.formatToBRL(row.valorPago) || '-' }}</TableCell>
                 <TableCell>{{ row?.quantidadeParcelas || '-' }}</TableCell>
                 <TableCell>
-                    <TableCell>
+                    <TableCell class=" flex gap-1">
                         <Popover>
                             <PopoverTrigger>
                                 <Button variant="outline" size="sm">
-                                    <Icon icon="lucide:banknote" />
+                                    <Icon icon="ph:list-bullets" />
                                 </Button>
                             </PopoverTrigger>
                             <PopoverContent>
@@ -100,6 +133,18 @@ const props = defineProps(['data'])
                                 </div>
                             </PopoverContent>
                         </Popover>
+                        <PrevisoesDespesasSheet v-model="sheetOpen" :titulo="tituloCobranca">
+                            <Button @click="handleListarDespesas(row.id, row.titulo)" variant="outline" size="sm">
+                                <Icon icon="ph:calendar" />
+                            </Button>
+                            <template #data>
+                                <div v-if="despesas" class="w-full">
+                                    <PrevisoesDespesasList :data="despesas" />
+                                </div>
+                                <p v-else class="text-muted-foreground text-xs">Nenhuma despesa encontrada</p>
+                            </template>
+                        </PrevisoesDespesasSheet v-model="sheetOpen" :titulo="tituloCobranca">
+
                     </TableCell>
 
                 </TableCell>

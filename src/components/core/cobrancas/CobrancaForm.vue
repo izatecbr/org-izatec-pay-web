@@ -1,23 +1,18 @@
 <script lang="ts" setup>
 import { useAPI } from '@/api/http-client';
+import AppCombobox from '@/components/common/app-combobox/AppCombobox.vue';
 import { InputMoney } from '@/components/common/input-money';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Loading } from '@/components/ui/loading';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { PagamentoModelo } from '@/constants/app/pagamento-modelo.interface';
 import { RecorrenciaPagamento } from '@/constants/app/recorrencia-pagamento.interface';
 import { SacadoState, type SacadoStateType } from '@/constants/app/sacado-state.interface';
 import { TOKEN_STORAGE_KEY } from '@/constants/storage/token';
 import Utils from '@/utils/index';
-import { Icon } from '@iconify/vue';
-import { addDays } from 'date-fns';
 import { debounce } from 'lodash-es';
 import { computed, defineProps, ref, watchEffect } from 'vue';
-import Column from '../Column.vue';
 
 const { cadastros } = useAPI()
 
@@ -47,8 +42,10 @@ const isRecorrente = computed(() => form.value.negociacao?.modelo === PagamentoM
 
 const sacadoState = ref<SacadoStateType>(SacadoState.EMPTY)
 
-const cadastroExist = computed(() => sacadoState.value == SacadoState.EXIST)
-const cadastroNotExist = computed(() => sacadoState.value == SacadoState.NOT_EXIST)
+const sacado = ref<any>(undefined)
+const inputSelect = ref<any>(undefined)
+const sacadoOptions = ref([])
+const cadastrosList = ref<any[]>([])
 
 const form = ref(Utils.clone(props.modelValue || {
     codigoIdentificacao: getCodigoIdenticacao(),
@@ -56,48 +53,36 @@ const form = ref(Utils.clone(props.modelValue || {
     titulo: "",
     sacado: { "documento": "", "nomeCompleto": "", "email": "", "whatsapp": "" },
     negociacao: {
-        modelo: "",
-        recorrencia: "",
+        modelo: PagamentoModelo.RECORRENTE.value,
+        recorrencia: RecorrenciaPagamento.MENSAL.value,
         quantidadeParcelas: 1,
-        proximoVencimento: Utils.formatDateISO(addDays(new Date(), 30))
+        proximoVencimento: Utils.formatDateISO(new Date())
     }
 }));
 
-const canSubmit = computed(()=> {
-    const invalidMoneyInput = [null, undefined, "",  0,]
+const canSubmit = computed(() => {
+    const invalidMoneyInput = [null, undefined, "", 0,]
     return form.value.sacado?.documento != '' && form.value.sacado?.nomeCompleto != '' && form.value.titulo != "" && !invalidMoneyInput.includes(form.value.valor)
 })
-
-const buscarCadastroPorCPF = debounce(async (value: string) => {
-    buscaSacadoLoading.value = true
-    const { body, success, status } = await cadastros.listagemCpfCnpj(Utils.removeCharacters(value) || '')
-    buscaSacadoLoading.value = false
-    if (body) {
-        sacadoState.value = SacadoState.EXIST
-        form.value.sacado.nomeCompleto = body?.nomeCompleto ?? ''
-        form.value.sacado.whatsapp = `${body.whatsapp ?? ''}`
-        form.value.sacado.email = body?.email ?? ''
-    } else {
-        sacadoState.value = SacadoState.NOT_EXIST
-    }
-
-}, 500)
 
 
 watchEffect(() => {
     if (form.value.negociacao?.modelo == PagamentoModelo.RECORRENTE.value) {
-        form.value.negociacao.quantidadeParcelas = 1
+        form.value.negociacao.quantidadeParcelas = 0
     }
 
-    if (form.value.sacado.documento) {
-        buscarCadastroPorCPF(form.value.sacado.documento)
+    if (inputSelect.value) {
+        buscarCadastroFiltro(sacado.value)
     }
 
-    if (form.value.sacado.documento === '') {
-        form.value.sacado.nomeCompleto = ''
-        form.value.sacado.whatsapp = ''
-        form.value.sacado.email = ''
-        sacadoState.value = SacadoState.EMPTY
+    if (sacado?.value) {
+        const cadastroSelecionado = cadastrosList.value.find((item: any) => item.id == sacado?.value)
+
+        form.value.sacado.nomeCompleto = cadastroSelecionado?.nomeCompleto ?? ''
+        form.value.sacado.whatsapp = cadastroSelecionado?.whatsapp ?? ''
+        form.value.sacado.documento = cadastroSelecionado?.documento ?? ''
+        form.value.sacado.email = cadastroSelecionado?.email ?? ''
+
     }
 })
 
@@ -106,7 +91,34 @@ function getCodigoIdenticacao() {
     return Utils.jwtToObject(jwt)?.codigoIntegracao
 }
 
+const buscarCadastroFiltro = debounce(async (value: InputEvent) => {
+
+    buscaSacadoLoading.value = true
+    const { body, success, status } = await cadastros.listagemNome(value.data)
+    buscaSacadoLoading.value = false
+    if (body) {
+        cadastrosList.value = body ?? []
+        sacadoOptions.value = body.map((item: any) => {
+            return {
+                value: item.id,
+                label: `${item.nomeCompleto}${item?.documento ? ` - ${item?.documento}` : ''}`
+            }
+        }) ?? []
+        sacadoState.value = SacadoState.EXIST
+    } else {
+        sacadoState.value = SacadoState.NOT_EXIST
+    }
+
+}, 500)
+
+function onSearchInput(value: InputEvent) {
+    sacado.value = value;
+    buscarCadastroFiltro(value);
+}
+
+
 const submitForm = async () => {
+
     if (form.value?.sacado?.documento) {
         const pureDocumento = Utils.removeCharacters(form.value.sacado.documento)
         form.value.sacado.documento = pureDocumento
@@ -138,11 +150,15 @@ const submitForm = async () => {
         <Card class="col-span-12 grid grid-cols-12 gap-1 p-1">
             <span class="col-span-12 text-xs text-muted-foreground">Sacado</span>
 
-            <div class="col-span-12 grid grid-cols-12 gap-1">
-                <div :class="cadastroExist ? 'col-span-3' : 'col-span-4'">
+            <div class="col-span-12">
+                <AppCombobox class="w-full" button-class="w-full" popover-class="w-[37.4dvw]"
+                    placeholder="Selecionar sacado" :loading="buscaSacadoLoading"
+                    placeholder-input="Busque por nome ou documento." :options="sacadoOptions" :input="inputSelect"
+                    v-model="sacado" @update:input="onSearchInput" />
+                <!--<div :class="cadastroExist ? 'col-span-4' : 'col-span-5'">
                     <Input v-model="form.sacado.documento" label="Documento" placeholder="CPF\CNPJ\RG" />
                 </div>
-                <div class="col-span-8">
+                <div class="col-span-7">
                     <Badge v-if="!cadastroNotExist" variant="soft" class="w-full h-full">
                         {{ cadastroExist ? (form.sacado?.nomeCompleto ?? 'Nome do sacado não foi informado') : 'Digite o documento para buscar um Sacado.' }}
                         <Loading v-if="buscaSacadoLoading" />
@@ -172,30 +188,18 @@ const submitForm = async () => {
                             </div>
                         </PopoverContent>
                     </Popover>
-                </div>
+                </div> -->
             </div>
-            <!--<div class="col-span-12 sm:col-span-6">
-                    <Input v-model="form.sacado.nomeCompleto" label="Nome" placeholder="Nome Completo" />
-                </div> -->
-
-            <!-- <div class="col-span-12 sm:col-span-6">
-                    <Input v-model="form.sacado.whatsapp" v-maska :data-maska="MaskaPattern.CELULAR"
-                        label="ex: 11 9 889891123" placeholder="Whatsapp" />
-                </div>
-
-                <div class="col-span-12 sm:col-span-6">
-                    <Input v-model="form.sacado.email" type="email" label="Email" placeholder="Email" />
-                </div> -->
         </Card>
 
         <Card class="col-span-12 grid grid-cols-12 gap-1 p-1">
             <span class="col-span-12 text-xs text-muted-foreground">Detalhe</span>
 
-            <div class="sm:col-span-6 col-span-12">
+            <div class="col-span-8">
                 <Input v-model="form.titulo" label="Descrição" placeholder="Descrição" />
             </div>
 
-            <div class="col-span-12 sm:col-span-6">
+            <div class="col-span-4 ">
                 <InputMoney v-model="form.valor" label="Valor" placeholder="Valor" />
             </div>
 
@@ -204,7 +208,7 @@ const submitForm = async () => {
         <Card class="col-span-12 grid grid-cols-12 gap-1 p-1">
             <span class="col-span-12 text-xs text-muted-foreground">Negociação</span>
 
-            <div :class="isRecorrente ? 'col-span-12 sm:col-span-6 md:col-span-6' : 'col-span-12 sm:col-span-6'">
+            <div class="col-span-6">
                 <label class="text-sm text-muted-foreground">Modelo</label>
                 <Select v-model="form.negociacao.modelo">
                     <SelectTrigger>
@@ -219,7 +223,7 @@ const submitForm = async () => {
             </div>
 
 
-            <div class="col-span-12 sm:col-span-6 md:col-span-6">
+            <div class="col-span-6">
                 <label class="text-sm text-muted-foreground">Recorrência</label>
                 <Select v-model="form.negociacao.recorrencia">
                     <SelectTrigger>
@@ -234,13 +238,13 @@ const submitForm = async () => {
                 </Select>
             </div>
 
-            <div :class="'col-span-12 sm:col-span-12 md:col-span-6'">
+            <div :class="'col-span-6'">
                 <label class="text-sm text-muted-foreground">Prox. Vencto.</label>
                 <Input v-model="form.negociacao.proximoVencimento" type="date" placeholder="Data Venct" />
             </div>
 
 
-            <div :class="'col-span-12 sm:col-span-12 md:col-span-6'">
+            <div :class="'col-span-6'">
                 <label class="text-sm text-muted-foreground">Qtd. Parcelas</label>
                 <Input v-model="form.negociacao.quantidadeParcelas" :min="1" :disabled="isRecorrente"
                     :max="isRecorrente ? 1 : undefined" type="number" placeholder="ex: 12" />

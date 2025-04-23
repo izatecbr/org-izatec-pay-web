@@ -12,6 +12,6 @@ const props = defineProps(['data'])
     </div>
     <Column align-items="center" justify-content="center" gap="10px" v-else>
         <Icon icon="lucide:inbox" class="text-center text-5xl text-muted-foreground mt-[10rem] " />
-        <p class="text-center text-lg  text-muted-foreground">Nenhum pagamento encontrado</p>
+        <p class="text-center text-lg  text-muted-foreground">Nenhum cadastro encontrado</p>
     </Column>
 </template>
