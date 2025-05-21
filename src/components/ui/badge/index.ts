@@ -12,7 +12,7 @@ export const badgeVariants = cva(
       variant: {
         default:
           'border-transparent bg-primary text-primary-foreground shadow hover:bg-primary/80',
-          soft:
+        soft:
           'bg-primary/40 border border-primary text-primary-foreground hover:bg-primary/60 hover:border-primary/70',
         secondary:
           'border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80',
@@ -41,8 +41,10 @@ export const badgeVariants = cva(
           'dark:border-red-500 dark:text-red-500 dark:bg-red-900/50 border-red-500 text-red-500 bg-red-400/20',
         [CobrancaStatusVariant.ATIVA.value]: 'dark:border-blue-500 dark:text-blue-400 dark:bg-blue-900/50 border-blue-500 text-blue-500 bg-blue-400/20',
         [CobrancaStatusVariant.FINALIZADA.value]: 'dark:border-green-600 dark:text-green-400 dark:bg-green-900/50 border-green-500 text-green-500 bg-green-400/20',
-        [CobrancaStatusVariant.QUITADA.value]: 'dark:border-blue-500 dark:text-blue-400 dark:bg-blue-900/50 border-blue-500 text-blue-500 bg-blue-400/20',
+        [CobrancaStatusVariant.QUITADA.value]: 'dark:border-teal-500 dark:text-teal-400 dark:bg-teal-900/50 border-teal-500 text-teal-500 bg-teal-400/20',
         [CobrancaStatusVariant.ENCERRADA.value]: 'dark:border-gray-600 dark:text-gray-400 dark:bg-gray-900/50 border-gray-500 text-gray-500 bg-gray-400/20',
+        [CobrancaStatusVariant.CANCELADA.value]:
+          'dark:border-red-500 dark:text-red-500 dark:bg-red-900/50 border-red-500 text-red-500 bg-red-400/20',
       },
     },
     defaultVariants: {

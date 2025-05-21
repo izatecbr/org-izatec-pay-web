@@ -4,10 +4,32 @@ export default class Utils {
 
     static formatDateISO(date: any): string {
         if (!date) {
-            return ''
+            return '';
         }
-        return date.toISOString().split('T')[0];
+    
+        // Garantir que o parâmetro seja uma instância de Date
+        const localDate = new Date(date);
+    
+        // Ajustar a data para o horário local
+        localDate.setMinutes(localDate.getMinutes() - localDate.getTimezoneOffset());
+    
+        // Formatar a data no formato ISO-8601, sem a parte de tempo
+        return localDate.toISOString().split('T')[0];
     }
+    
+
+    static formatTimeHHMM(date: any): string {
+        if (!date) {
+            return '';
+        }
+
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
+
+        return `${hours}:${minutes}`;
+    }
+
+
     static formatDate = (date: Date) => {
         if (!date) {
             return ''
@@ -73,12 +95,19 @@ export default class Utils {
     }
 
     static numberToInputMask = (num: number) => {
-        return num ? num.toFixed(2) : '0.00'
-    }
+        return num
+            ? new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL',
+                minimumFractionDigits: 2,
+            }).format(num)
+            : 'R$ 0,00';
+    };
 
     static moneyMaskToNumber = (valor: any) => {
+
+
         if (!valor) return 0.0
-        valor = valor.toString()
         return valor ? Number(valor.replace(/\D/g, '').replace(/(\d+)(\d{2})/, '$1.$2')) : 0.0
     }
 

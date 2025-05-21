@@ -1,27 +1,58 @@
 <script lang="ts" setup>
+import { useFilesAPI } from '@/api/file-http-client';
 import { useAPI } from '@/api/http-client';
+import ComprovanteDownloadList from '@/components/common/arquivos/ComprovanteDownloadList.vue';
+import DialogConfirmacaoAcao from '@/components/common/dialogs/DialogConfirmacaoAcao.vue';
+import DialogUploadArquivo from '@/components/common/dialogs/DialogUploadArquivo.vue';
 import Badge from '@/components/ui/badge/Badge.vue';
 import Button from '@/components/ui/button/Button.vue';
+import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/components/ui/toast';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { AnexoOrigemLocal } from '@/constants/app/anexo-origem-local';
 import { CobrancaStatusVariant } from '@/constants/ui/cobranca-status-variant.interface';
 import Utils from '@/utils';
 import { Icon } from '@iconify/vue';
 import { ref } from 'vue';
 import Column from '../Column.vue';
+import Row from '../Row.vue';
 import CobrancaPagamentosList from './CobrancaPagamentosList.vue';
 import CobrancasPagamentosSheet from './CobrancasPagamentosSheet.vue';
 
 const { data } = defineProps(['data']);
+const emits = defineEmits(['fetch-data']);
 
 const { toast } = useToast()
 const { cobrancas } = useAPI()
+const { anexos } = useFilesAPI();
 
+const dialogConfirmacaoPagamentoManual = ref<any>(false)
+const dialogConfirmacaoCancelamentoPagamento = ref<any>(false)
 const sheetOpen = ref(false)
+const dialogUploadOpen = ref(false)
+
 const loading = ref<{ [key: number]: any }>({})
+const loadingPagmentoManual = ref<{ [key: number]: any }>({})
+const loadingCancelamento = ref<{ [key: number]: any }>({})
+
 const pagamentos = ref(null)
 const tituloCobranca = ref('')
+const motivoCancelamento = ref('')
+const itemSelecionado = ref<any>(null)
+const listAnexos = ref([])
+
+const handlOpenDialogUpload = (item: any) => {
+    itemSelecionado.value = item
+    dialogUploadOpen.value = true
+}
+
+const handleListAnexos = async (item: any) => {
+    const { data } = await anexos.list(item.id, AnexoOrigemLocal.COBRANCA.value)
+    listAnexos.value = data.body || []
+}
+
 
 const listarPagamentos = async (id: number, titulo: string) => {
     loading.value[id] = true
@@ -42,15 +73,67 @@ const listarPagamentos = async (id: number, titulo: string) => {
     loading.value[id] = false
 }
 
+const gerarPagamentoManualmente = async (id: number) => {
+    loadingPagmentoManual.value[id] = true
+    const { success, status, body } = await cobrancas.gerarCobrancaManual(id)
+
+    toast({
+        title: status.message,
+        description: status?.suggestion || '',
+        variant: success ? 'default' : 'destructive',
+        duration: 1300,
+    });
+
+    if (success) {
+        dialogConfirmacaoPagamentoManual.value = false
+        emits('fetch-data')
+    }
+
+    loadingPagmentoManual.value[id] = false
+}
+
+const cancelarCobranca = async (id: number) => {
+    loadingCancelamento.value[id] = true
+    const { success, status, body } = await cobrancas.cancelamento(id, motivoCancelamento.value)
+
+    toast({
+        title: status.message,
+        description: status?.suggestion || '',
+        variant: success ? 'default' : 'destructive',
+        duration: 1300,
+    });
+
+    if (success) {
+        dialogConfirmacaoCancelamentoPagamento.value = false
+        emits('fetch-data')
+    }
+    motivoCancelamento.value = ''
+    loadingCancelamento.value[id] = false
+}
+
+
+const handleOpenDialog = (row: any, updateDialog: (value: boolean) => void) => {
+    itemSelecionado.value = row;
+    updateDialog(true);
+};
+
+
+const descricaoDefault = "Gerando o pagamento manual de"
+const descricaoCancelamentoDefault = "Cancelando a cobrança de"
+const getDescricao = (message: string = descricaoDefault) => {
+    return itemSelecionado.value?.titulo ? `${message}: ${itemSelecionado.value?.titulo}. Parcela: ${itemSelecionado.value?.negociacao?.proximaParcela} ${Utils.formatDateToBR(itemSelecionado.value?.negociacao?.proximoVencimento)}.` : ''
+}
+
+
 </script>
 
 <template>
     <Table>
         <TableHeader>
             <TableRow>
-                <TableHead>Sacado</TableHead>
                 <TableHead>Título</TableHead>
                 <TableHead>R$ Cobrança</TableHead>
+                <TableHead>R$ Parcela</TableHead>
                 <TableHead>R$ Cobrado</TableHead>
                 <TableHead>Prox. Vencto.</TableHead>
                 <TableHead>Status</TableHead>
@@ -59,16 +142,28 @@ const listarPagamentos = async (id: number, titulo: string) => {
         </TableHeader>
         <TableBody v-if="data.length > 0">
             <TableRow v-for="(row, index) in data" :key="row.id">
-                <TableCell class="text-nowrap">{{ ((row.sacado?.nomeCompleto || '-') + ' - ' +
-                    (row.sacado?.documento || '-')) }}</TableCell>
-                <TableCell>{{ Utils.truncate(row.titulo, 18) }}</TableCell>
+                <TableCell>
+                    <TooltipProvider v-if="row?.observacao">
+                        <Tooltip>
+                            <TooltipTrigger as-child>
+                                <p class=" cursor-pointer">
+                                    {{ row?.titulo || 'Não informado' }}
+                                </p>
+                            </TooltipTrigger>
+                            <TooltipContent>{{ row?.observacao }}</TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                    <p v-else>{{ row?.titulo || 'Não informado' }}</p>
+                </TableCell>
                 <TableCell>{{ Utils.formatToBRL(row.valorCobranca) }}</TableCell>
+                <TableCell>{{ Utils.formatToBRL(row.valorParcela) }}</TableCell>
                 <TableCell>{{ Utils.formatToBRL(row.valorCobrado) }}</TableCell>
                 <TableCell>
                     <p>{{ Utils.formatDateToBR(row.negociacao?.proximoVencimento) || '-' }}</p>
                 </TableCell>
                 <TableCell>
-                    <Badge :variant="CobrancaStatusVariant[row.status].value" class="mr-2">{{ row.status }}</Badge>
+                    <Badge :variant="CobrancaStatusVariant[row.status.id].value" class="mr-2">{{ row.status.nome }}
+                    </Badge>
                 </TableCell>
                 <TableCell class="flex nowrap gap-1">
                     <Popover>
@@ -95,8 +190,40 @@ const listarPagamentos = async (id: number, titulo: string) => {
                     </Popover>
                     <Popover>
                         <PopoverTrigger>
+                            <Button @click="handleListAnexos(row)" variant="outline" size="sm">
+                                <Icon icon="lucide:paperclip" />
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent>
+                            <Badge variant="success" class=" w-full ">
+                                <div class="text-foreground text-xs w-full ">
+                                    <Row align-items="center" justify-content="space-between" gap="0.5rem"
+                                        class="w-full flex items-center ">
+                                        <h3 class="font-bold w-full text-balance text-secondary-foreground">
+                                            Upload de Comprovante
+                                        </h3>
+                                        <Button class="p-1 h-fit" @click="handlOpenDialogUpload(row)" variant="outline"
+                                            size="sm">
+                                            <Icon icon="lucide:upload" />
+                                        </Button>
+                                    </Row>
+                                </div>
+                            </Badge>
+
+                            <div class="mt-2">
+                                <ComprovanteDownloadList :data="listAnexos" />
+                            </div>
+                        </PopoverContent>
+                    </Popover>
+
+                    <DialogUploadArquivo v-if="dialogUploadOpen" :item="itemSelecionado"
+                        :anexo-origem="AnexoOrigemLocal.COBRANCA.value" @fetch-data="handleListAnexos(row)"
+                        v-model="dialogUploadOpen" />
+
+                    <Popover>
+                        <PopoverTrigger>
                             <Button variant="outline" size="sm">
-                                <Icon icon="lucide:banknote" />
+                                <Icon icon="ph:list-bullets" />
                             </Button>
                         </PopoverTrigger>
                         <PopoverContent>
@@ -119,19 +246,20 @@ const listarPagamentos = async (id: number, titulo: string) => {
                                 </Column>
                                 <Column>
                                     <strong>Modelo</strong>
-                                    <p>{{ row.negociacao?.modelo || '-' }}</p>
+                                    <p>{{ row.negociacao?.modelo?.nome || '-' }}</p>
                                 </Column>
                                 <Column>
                                     <strong>Recorrencia</strong>
-                                    <p>{{ row.negociacao?.recorrencia || '-' }}</p>
+                                    <p>{{ row.negociacao?.recorrencia?.descricao || '-' }}</p>
                                 </Column>
                             </div>
                         </PopoverContent>
                     </Popover>
-                    <Popover v-if="row?.endereco" >
+
+                    <Popover v-if="row?.endereco">
                         <PopoverTrigger>
                             <Button variant="outline" size="sm">
-                                <Icon icon="ph:house" />
+                                <Icon icon="ph:map-pin-line" />
                             </Button>
                         </PopoverTrigger>
                         <PopoverContent>
@@ -140,11 +268,57 @@ const listarPagamentos = async (id: number, titulo: string) => {
                             </div>
                         </PopoverContent>
                     </Popover>
+
+                    <Popover>
+                        <PopoverTrigger as-child>
+                            <Button size="sm" variant="outline">
+                                <Icon icon="ic:round-edit" />
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent class="w-[180px] p-1.5">
+                            <Column gap=".45rem">
+
+                                <Button v-if="row.status.id == CobrancaStatusVariant.ATIVA.value"
+                                    @click="handleOpenDialog(row, (value) => dialogConfirmacaoPagamentoManual = value)"
+                                    :loading="loadingPagmentoManual[row.id]" variant="outline" size="sm">
+                                    <Row class=" w-full" align-items="center" justify-content="space-between">
+                                        <p>Gerar Pagamento</p>
+                                        <Icon icon="lucide:calendar-plus" />
+                                    </Row>
+
+                                </Button>
+
+                                <Button v-if="row.status.id == CobrancaStatusVariant.ATIVA.value"
+                                    @click="handleOpenDialog(row, (value) => dialogConfirmacaoCancelamentoPagamento = value)"
+                                    variant="outline" size="sm">
+                                    <Row class=" w-full" align-items="center" justify-content="space-between">
+                                        <p>Cancelar Cobrança</p>
+                                        <Icon icon="lucide:banknote-x" />
+                                    </Row>
+                                </Button>
+
+                            </Column>
+                        </PopoverContent>
+                    </Popover>
+
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger as-child>
+                                <Button @click="listarPagamentos(row.id, row.titulo)" :loading="loading[row.id]"
+                                    variant="outline" size="sm">
+                                    <Icon icon="lucide:calendar-days" />
+                                </Button>
+
+                            </TooltipTrigger>
+                            <TooltipContent class="text-xs">
+                                <p>Listar Pagamentos</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+
+
                     <CobrancasPagamentosSheet v-model="sheetOpen" :titulo="tituloCobranca">
-                        <Button @click="listarPagamentos(row.id, row.titulo)" :loading="loading[row.id]"
-                            variant="outline" size="sm">
-                            <Icon icon="lucide:calendar-days" />
-                        </Button>
+
                         <template #data>
                             <div v-if="pagamentos" class="w-full">
                                 <CobrancaPagamentosList :data="pagamentos" />
@@ -152,6 +326,30 @@ const listarPagamentos = async (id: number, titulo: string) => {
                             <p v-else class="text-muted-foreground text-xs">Nenhum pagamento encontrado</p>
                         </template>
                     </CobrancasPagamentosSheet>
+
+                    <DialogConfirmacaoAcao v-if="dialogConfirmacaoPagamentoManual"
+                        v-model="dialogConfirmacaoPagamentoManual" @submit="gerarPagamentoManualmente(row.id)"
+                        :loading="loadingPagmentoManual[row.id]"
+                        titulo="Tem certeza que deseja gerar o pagamento manualmente ?">
+                        <template #descricao>
+                            <div>
+                                {{ getDescricao() }}
+                            </div>
+                        </template>
+                    </DialogConfirmacaoAcao>
+
+                    <DialogConfirmacaoAcao v-if="dialogConfirmacaoCancelamentoPagamento"
+                        v-model="dialogConfirmacaoCancelamentoPagamento" :disabled="motivoCancelamento.length == 0"
+                        @submit="cancelarCobranca(row.id)" :loading="loadingCancelamento[row.id]"
+                        titulo="Tem certeza que deseja cancelar a cobrança ?">
+                        <template #descricao>
+                            <div class="flex flex-col w-full">
+                                <p> {{ getDescricao(descricaoCancelamentoDefault) }}</p>
+                                <Input class="mt-2" placeholder="Motivo do cancelamento" v-model="motivoCancelamento" />
+                            </div>
+                        </template>
+                    </DialogConfirmacaoAcao>
+
                 </TableCell>
 
             </TableRow>

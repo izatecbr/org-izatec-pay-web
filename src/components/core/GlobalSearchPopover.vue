@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
-import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
-import { computed, ref, onMounted, onUnmounted } from 'vue';
-import { useRoute } from 'vue-router';
-import router from '@/router';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Separator } from '@/components/ui/separator';
 import { APP_MENU } from '@/config/app';
+import router from '@/router';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { useRoute } from 'vue-router';
 
 const search = ref<string>('');
 const isFocused = ref<boolean>(false);
@@ -118,7 +118,7 @@ onUnmounted(() => {
       <Separator />
       <div class="py-4">
         <h4 class="font-semibold mb-2 text-lg">In This Page</h4>
-        <p class="text-muted">Or your custom search result here</p>
+        <p >Or your custom search result here</p>
       </div>
     </PopoverContent>
   </Popover>

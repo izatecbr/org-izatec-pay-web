@@ -12,7 +12,7 @@ import { SacadoState, type SacadoStateType } from '@/constants/app/sacado-state.
 import { TOKEN_STORAGE_KEY } from '@/constants/storage/token';
 import Utils from '@/utils/index';
 import { debounce } from 'lodash-es';
-import { computed, defineProps, ref, watchEffect } from 'vue';
+import { computed, ref, watchEffect } from 'vue';
 
 const { cadastros } = useAPI()
 
@@ -62,7 +62,7 @@ const form = ref(Utils.clone(props.modelValue || {
 
 const canSubmit = computed(() => {
     const invalidMoneyInput = [null, undefined, "", 0,]
-    return form.value.sacado?.documento != '' && form.value.sacado?.nomeCompleto != '' && form.value.titulo != "" && !invalidMoneyInput.includes(form.value.valor)
+    return form.value.sacado?.nomeCompleto != '' && form.value.titulo != "" && !invalidMoneyInput.includes(form.value.valor)
 })
 
 
@@ -91,30 +91,31 @@ function getCodigoIdenticacao() {
     return Utils.jwtToObject(jwt)?.codigoIntegracao
 }
 
-const buscarCadastroFiltro = debounce(async (value: InputEvent) => {
+const buscarCadastroFiltro = debounce(async (value: string) => {
+    buscaSacadoLoading.value = true;
+    const { body, success, status } = await cadastros.listagemNome(value);
+    buscaSacadoLoading.value = false;
 
-    buscaSacadoLoading.value = true
-    const { body, success, status } = await cadastros.listagemNome(value.data)
-    buscaSacadoLoading.value = false
     if (body) {
-        cadastrosList.value = body ?? []
+        cadastrosList.value = body ?? [];
         sacadoOptions.value = body.map((item: any) => {
             return {
                 value: item.id,
-                label: `${item.nomeCompleto}${item?.documento ? ` - ${item?.documento}` : ''}`
-            }
-        }) ?? []
-        sacadoState.value = SacadoState.EXIST
+                label: `${item.nomeCompleto}${item?.documento ? ` - ${item?.documento}` : ''}`,
+            };
+        }) ?? [];
+        sacadoState.value = SacadoState.EXIST;
     } else {
-        sacadoState.value = SacadoState.NOT_EXIST
+        sacadoState.value = SacadoState.NOT_EXIST;
     }
+}, 500);
 
-}, 500)
-
-function onSearchInput(value: InputEvent) {
-    sacado.value = value;
-    buscarCadastroFiltro(value);
+function onSearchInput(event: InputEvent) {
+    const inputValue = (event.target as HTMLInputElement).value;
+    sacado.value = inputValue;
+    buscarCadastroFiltro(inputValue);
 }
+
 
 
 const submitForm = async () => {

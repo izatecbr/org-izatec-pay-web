@@ -20,6 +20,7 @@ export interface CadastroRequest {
     id?: null
     documento?: string
     nomeCompleto: string
+    informacoesAdicionais?: string
     email: string
     whatsapp: any
     dataNascimento: string

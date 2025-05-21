@@ -10,9 +10,8 @@ import { DespesasVariant, type DespesasVariantType } from '@/constants/app/despe
 import { PagamentoModelo } from '@/constants/app/pagamento-modelo.interface';
 import { RecorrenciaPagamento } from '@/constants/app/recorrencia-pagamento.interface';
 import Utils from '@/utils/index';
-import { addDays } from 'date-fns';
 import { debounce } from 'lodash-es';
-import { computed, defineProps, ref, watchEffect } from 'vue';
+import { computed, ref, watchEffect } from 'vue';
 
 const { cadastros } = useAPI()
 
@@ -62,7 +61,7 @@ const form = ref(Utils.clone(props.modelValue || {
         "whatsapp": ""
     },
     "negociacao": {
-        "proximoVencimento": Utils.formatDateISO(addDays(new Date(), 30)),
+        "proximoVencimento": Utils.formatDateISO(new Date()),
         "proximaParcela": 0,
         "quantidadeParcelas": 0,
         "modelo": PagamentoModelo.RECORRENTE.value,
@@ -87,11 +86,19 @@ const cadastrosList = ref<any[]>([])
 const categorias = computed<any>(() => {
     return form.value.aplicacao.grupo ? DespesasVariant[form.value.aplicacao.grupo] : [];
 });
+const categoriasAppCombobox = computed<any>(() => {
+    return categorias.value.map((item: string) => {
+        return {
+            value: item,
+            label: item
+        }
+    }) ?? [];
+});
 const isRecorrente = computed(() => form.value.negociacao.modelo === PagamentoModelo.RECORRENTE.value)
 
 watchEffect(() => {
     if (form.value.negociacao?.modelo == PagamentoModelo.RECORRENTE.value) {
-        form.value.negociacao.quantidadeParcelas = 1
+        form.value.negociacao.quantidadeParcelas = 0
     }
 
     if (inputSelect.value) {
@@ -101,6 +108,7 @@ watchEffect(() => {
     if (sacado?.value) {
         const cadastroSelecionado = cadastrosList.value.find((item: any) => item.id == sacado?.value)
 
+        form.value.favorecido.id = cadastroSelecionado?.id ?? null
         form.value.favorecido.nomeCompleto = cadastroSelecionado?.nomeCompleto ?? ''
         form.value.favorecido.whatsapp = cadastroSelecionado?.whatsapp ?? ''
         form.value.favorecido.documento = cadastroSelecionado?.documento ?? ''
@@ -111,27 +119,37 @@ watchEffect(() => {
 
 })
 
-const buscarCadastroFiltro = debounce(async (value: InputEvent) => {
+const buscarCadastroFiltro = debounce(async (value: string) => {
+    buscaSacadoLoading.value = true;
+    const { body } = await cadastros.listagemNome(value);
+    buscaSacadoLoading.value = false;
 
-    buscaSacadoLoading.value = true
-    const { body, success, status } = await cadastros.listagemNome(value.data)
-    buscaSacadoLoading.value = false
     if (body) {
-        cadastrosList.value = body ?? []
+        cadastrosList.value = body ?? [];
         sacadoOptions.value = body.map((item: any) => {
             return {
                 value: item.id,
-                label: `${item.nomeCompleto}${item?.documento ? ` - ${item?.documento}` : ''}`
-            }
-        }) ?? []
+                label: `${item.nomeCompleto}${item?.documento ? ` - ${item?.documento}` : ''}`,
+            };
+        }) ?? [];
     }
+}, 500);
 
-}, 500)
-
-function onSearchInput(value: InputEvent) {
-    sacado.value = value;
-    buscarCadastroFiltro(value);
+function onSearchInput(event: InputEvent) {
+    const inputValue = (event.target as HTMLInputElement).value;
+    sacado.value = inputValue;
+    buscarCadastroFiltro(inputValue);
 }
+
+const categoriasFiltradas = ref<any[]>([]);
+
+function onSearchCategoria(event: InputEvent) {
+    const inputValue = (event.target as HTMLInputElement).value;
+    categoriasFiltradas.value = categorias.value.filter((categoria: string) =>
+        categoria.toLowerCase().includes(inputValue.toLowerCase())
+    );
+}
+
 
 const submitForm = async () => {
 
@@ -157,6 +175,15 @@ const submitForm = async () => {
     emit('onSubmit', Utils.clone(form.value));
 };
 
+const canSubmit = computed(() => {
+    const emptyValues = [null, undefined, "", 0,]
+    return !emptyValues.includes(form.value.favorecido.id) && !emptyValues.includes(form.value.valor) &&
+        !emptyValues.includes(form.value.titulo) && !emptyValues.includes(form.value.negociacao.proximoVencimento)
+        && !emptyValues.includes(form.value.aplicacao.grupo)
+        && !emptyValues.includes(form.value.aplicacao.categoria) && !emptyValues.includes(form.value.negociacao.modelo)
+        && !emptyValues.includes(form.value.negociacao.recorrencia)
+})
+
 </script>
 
 <template>
@@ -173,25 +200,6 @@ const submitForm = async () => {
                         placeholder-input="Busque por nome ou documento." :options="sacadoOptions" :input="inputSelect"
                         v-model="sacado" @update:input="onSearchInput" />
                 </div>
-
-
-                <!--<div class="col-span-6">
-                    <Input v-model="form.favorecido.documento" label="Documento"
-                        placeholder="CPF\CNPJ\RG" />
-                </div>
-
-                <div class="col-span-6">
-                    <Input v-model="form.favorecido.nomeCompleto" label="Nome Completo" placeholder="Nome Completo" />
-                </div>
-
-                <div class="col-span-6">
-                    <Input v-model="form.favorecido.email" type="email" label="Email" placeholder="Email" />
-                </div>
-
-                <div class="col-span-6">
-                    <Input v-model="form.favorecido.whatsapp" v-maska :data-maska="MaskaPattern.CELULAR"
-                        label="ex: 11 9 889891123" placeholder="Whatsapp" />
-                </div> -->
 
             </Card>
         </Transition>
@@ -223,17 +231,12 @@ const submitForm = async () => {
 
             <div class="col-span-6">
                 <label class="text-sm text-muted-foreground">Categoria</label>
-                <Select v-model="form.aplicacao.categoria" :disabled="!form.aplicacao.grupo">
-                    <SelectTrigger>
-                        <SelectValue placeholder="Selecione uma categoria" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem v-for="categoria in categorias" :key="categoria" :value="categoria">
-                            {{ categoria }}
-                        </SelectItem>
-                    </SelectContent>
-                </Select>
+                <AppCombobox class="w-full" button-class="w-full" popover-class="w-[17.4dvw]"
+                    placeholder="Selecione uma categoria" placeholder-input="Digite para buscar..."
+                    :options="categoriasAppCombobox" v-model="form.aplicacao.categoria" @update:input="onSearchCategoria"
+                    :disabled="!form.aplicacao.grupo" />
             </div>
+
         </Card>
 
         <Card class="col-span-12 grid grid-cols-12 gap-1 p-1">
@@ -277,15 +280,15 @@ const submitForm = async () => {
 
             <div :class="'col-span-6'">
                 <label class="text-sm text-muted-foreground">Qtd. Parcelas</label>
-                <Input v-model="form.negociacao.quantidadeParcelas" :min="1" :disabled="isRecorrente"
-                    :max="isRecorrente ? 1 : undefined" type="number" placeholder="ex: 12" />
+                <Input v-model="form.negociacao.quantidadeParcelas" :min="0" :disabled="isRecorrente"
+                    :max="isRecorrente ? 0 : undefined" type="number" placeholder="ex: 12" />
             </div>
 
         </Card>
 
 
         <div class="col-span-12">
-            <Button class="w-full" type="submit" :loading="loading">
+            <Button :disabled="!canSubmit" class="w-full" type="submit" :loading="loading || buscaSacadoLoading">
                 Confirmar
             </Button>
         </div>

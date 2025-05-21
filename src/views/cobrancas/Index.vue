@@ -75,8 +75,8 @@ const submit = async (payload: any) => {
 }
 
 const changeStatus = (value: any) => {
-  status.value = value
-  fetchCobrancas()
+    status.value = value
+    fetchCobrancas()
 }
 
 
@@ -97,29 +97,34 @@ watch(cadastroSelecionado, async () => {
     <div>
 
 
-        <page-header title="Cobranças" />
+        <page-header class="mb-0" title="Cobranças" />
 
         <Tabs :default-value="status" class="space-y-2">
             <Row align-items="center" flex-wrap="wrap" gap="5px">
-                    <CadastrosBadgeSelecionado />
-                </Row>
+                <CadastrosBadgeSelecionado />
+            </Row>
             <Row flex-wrap="wrap" gap="10px" align-items="start" justify-content="space-between"
                 class="w-full relative">
-                <Row flex-wrap="wrap" gap="10px"  >
-                <TabsList>
-                    <TabsTrigger @click="changeStatus(CobrancaStatusVariant.ATIVA.value)" :value="CobrancaStatusVariant.ATIVA.value">
-                        Ativas
-                    </TabsTrigger>
-                    <TabsTrigger @click="changeStatus(CobrancaStatusVariant.FINALIZADA.value)"
-                        :value="CobrancaStatusVariant.FINALIZADA.value">
-                        Finalizadas
-                    </TabsTrigger>
-                    <TabsTrigger @click="changeStatus(CobrancaStatusVariant.QUITADA.value)"
-                        :value="CobrancaStatusVariant.QUITADA.value">
-                        Quitadas
-                    </TabsTrigger>
-                </TabsList>
-            </Row>
+                <Row flex-wrap="wrap" gap="10px">
+                    <TabsList>
+                        <TabsTrigger @click="changeStatus(CobrancaStatusVariant.ATIVA.value)"
+                            :value="CobrancaStatusVariant.ATIVA.value">
+                            Ativas
+                        </TabsTrigger>
+                        <TabsTrigger @click="changeStatus(CobrancaStatusVariant.FINALIZADA.value)"
+                            :value="CobrancaStatusVariant.FINALIZADA.value">
+                            Finalizadas
+                        </TabsTrigger>
+                        <TabsTrigger @click="changeStatus(CobrancaStatusVariant.QUITADA.value)"
+                            :value="CobrancaStatusVariant.QUITADA.value">
+                            Quitadas
+                        </TabsTrigger>
+                        <TabsTrigger @click="changeStatus(CobrancaStatusVariant.CANCELADA.value)"
+                            :value="CobrancaStatusVariant.CANCELADA.value">
+                            Canceladas
+                        </TabsTrigger>
+                    </TabsList>
+                </Row>
 
                 <Row gap="10px" flex-wrap="wrap">
                     <Row flex-wrap="wrap" gap="10px" justify-content="flex-end" class="w-full mb-4">
@@ -157,8 +162,8 @@ watch(cadastroSelecionado, async () => {
             </Row>
 
             <div class="w-full">
-                <CobrancasTable :data="data" v-if="isDesktop" />
-                <ScrollArea class="max-h-[70vh] w-full overflow-y-auto" v-else>
+                <CobrancasTable  :data="data" @fetch-data="fetchCobrancas" v-if="isDesktop" />
+                <ScrollArea class="max-h-[84dvh] w-full overflow-y-auto" v-else>
                     <CobrancaList class="w-full" :data="data" />
                 </ScrollArea>
             </div>

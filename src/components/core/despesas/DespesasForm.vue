@@ -11,7 +11,7 @@ import { PagamentoModelo } from '@/constants/app/pagamento-modelo.interface';
 import { RecorrenciaPagamento } from '@/constants/app/recorrencia-pagamento.interface';
 import Utils from '@/utils/index';
 import { debounce } from 'lodash-es';
-import { computed, defineProps, ref, watchEffect } from 'vue';
+import { computed, ref, watchEffect } from 'vue';
 
 const { cadastros } = useAPI()
 
@@ -82,9 +82,16 @@ const cadastrosList = ref<any[]>([])
 const categorias = computed<any>(() => {
     return form.value.aplicacao.grupo ? DespesasVariant[form.value.aplicacao.grupo] : [];
 });
+const categoriasAppCombobox = computed<any>(() => {
+    return categorias.value.map((item: string) => {
+        return {
+            value: item,
+            label: item
+        }
+    }) ?? [];
+});
 
 watchEffect(() => {
-
 
     if (inputSelect.value) {
         buscarCadastroFiltro(sacado.value)
@@ -93,36 +100,35 @@ watchEffect(() => {
     if (sacado?.value) {
         const cadastroSelecionado = cadastrosList.value.find((item: any) => item.id == sacado?.value)
 
+        form.value.favorecido.id = cadastroSelecionado?.id ?? null
         form.value.favorecido.nomeCompleto = cadastroSelecionado?.nomeCompleto ?? ''
         form.value.favorecido.whatsapp = cadastroSelecionado?.whatsapp ?? ''
         form.value.favorecido.documento = cadastroSelecionado?.documento ?? ''
         form.value.favorecido.email = cadastroSelecionado?.email ?? ''
-
     }
-
 
 })
 
-const buscarCadastroFiltro = debounce(async (value: InputEvent) => {
+const buscarCadastroFiltro = debounce(async (value: string) => {
+    buscaSacadoLoading.value = true;
+    const { body } = await cadastros.listagemNome(value);
+    buscaSacadoLoading.value = false;
 
-    buscaSacadoLoading.value = true
-    const { body, success, status } = await cadastros.listagemNome(value.data)
-    buscaSacadoLoading.value = false
     if (body) {
-        cadastrosList.value = body ?? []
+        cadastrosList.value = body ?? [];
         sacadoOptions.value = body.map((item: any) => {
             return {
                 value: item.id,
-                label: `${item.nomeCompleto}${item?.documento ? ` - ${item?.documento}` : ''}`
-            }
-        }) ?? []
+                label: `${item.nomeCompleto}${item?.documento ? ` - ${item?.documento}` : ''}`,
+            };
+        }) ?? [];
     }
+}, 500);
 
-}, 500)
-
-function onSearchInput(value: InputEvent) {
-    sacado.value = value;
-    buscarCadastroFiltro(value);
+function onSearchInput(event: InputEvent) {
+    const inputValue = (event.target as HTMLInputElement).value;
+    sacado.value = inputValue;
+    buscarCadastroFiltro(inputValue);
 }
 
 const submitForm = async () => {
@@ -148,6 +154,24 @@ const submitForm = async () => {
     emit('update:modelValue', form.value);
     emit('onSubmit', Utils.clone(form.value));
 };
+
+const canSubmit = computed(() => {
+    const emptyValues = [null, undefined, "", 0,]
+    return !emptyValues.includes(form.value.favorecido.id) && !emptyValues.includes(form.value.valor) &&
+        !emptyValues.includes(form.value.mensagem) && !emptyValues.includes(form.value.vencimento.data) &&
+        !emptyValues.includes(form.value.vencimento.hora) && !emptyValues.includes(form.value.aplicacao.grupo) &&
+        !emptyValues.includes(form.value.aplicacao.categoria)
+})
+
+const categoriasFiltradas = ref<any[]>([]);
+
+function onSearchCategoria(event: InputEvent) {
+    const inputValue = (event.target as HTMLInputElement).value;
+    categoriasFiltradas.value = categorias.value.filter((categoria: string) =>
+        categoria.toLowerCase().includes(inputValue.toLowerCase())
+    );
+}
+
 
 </script>
 
@@ -228,21 +252,15 @@ const submitForm = async () => {
 
             <div class="col-span-6">
                 <label class="text-sm text-muted-foreground">Categoria</label>
-                <Select v-model="form.aplicacao.categoria" :disabled="!form.aplicacao.grupo">
-                    <SelectTrigger>
-                        <SelectValue placeholder="Selecione uma categoria" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem v-for="categoria in categorias" :key="categoria" :value="categoria">
-                            {{ categoria }}
-                        </SelectItem>
-                    </SelectContent>
-                </Select>
+                <AppCombobox class="w-full" button-class="w-full" popover-class="w-[17.4dvw]"
+                    placeholder="Selecione uma categoria" placeholder-input="Digite para buscar..."
+                    :options="categoriasAppCombobox" v-model="form.aplicacao.categoria"
+                    @update:input="onSearchCategoria" :disabled="!form.aplicacao.grupo" />
             </div>
         </Card>
 
         <div class="col-span-12">
-            <Button class="w-full" type="submit" :loading="loading">
+            <Button :disabled="!canSubmit" class="w-full" type="submit" :loading="loading || buscaSacadoLoading">
                 Confirmar
             </Button>
         </div>

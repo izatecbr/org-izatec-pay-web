@@ -1,16 +1,37 @@
 <script setup lang="ts">
+import { useFilesAPI } from '@/api/file-http-client';
+import CadastrosDownloadList from '@/components/common/cadastros/CadastrosDownloadList.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { AnexoOrigemLocal } from '@/constants/app/anexo-origem-local';
+import DialogUploadArquivo from '@/components/common/dialogs/DialogUploadArquivo.vue';
 import Utils from '@/utils';
 import { Icon } from '@iconify/vue';
+import { ref } from 'vue';
 import Column from '../Column.vue';
 import Row from '../Row.vue';
 
 const props = defineProps<{ data: Array<any> }>();
 const emit = defineEmits(['onEdit']);
+
+const { anexos } = useFilesAPI();
+const itemSelecionado = ref<any>(null)
+const dialogUploadOpen = ref(false)
+const listAnexos = ref([])
+
+const handleListAnexos = async (item: any) => {
+    const { data } = await anexos.list(item.id, AnexoOrigemLocal.CADASTRO.value)
+    listAnexos.value = data.body || []
+}
+
+const handlOpenDialogUpload = (item: any) => {
+    itemSelecionado.value = item
+    dialogUploadOpen.value = true
+}
+
 
 </script>
 
@@ -22,7 +43,9 @@ const emit = defineEmits(['onEdit']);
                 <TableHead>Nome</TableHead>
                 <TableHead>Documento</TableHead>
                 <TableHead>Contato</TableHead>
-                <TableHead class=" flex items-center justify-end" >Acões</TableHead>
+                <TableHead>Avalista</TableHead>
+                <TableHead>Dt. Nascimento</TableHead>
+                <TableHead class=" flex items-center justify-end">Acões</TableHead>
             </TableRow>
         </TableHeader>
         <TableBody v-if="data.length > 0">
@@ -42,7 +65,7 @@ const emit = defineEmits(['onEdit']);
                                 <Column>
                                     <strong>Email</strong>
                                     <Row justify-content="space-between" align-items="center" gap="5px">
-                                        <p>{{ row?.whatsapp || 'Não informado' }}</p>
+                                        <p>{{ row?.email || 'Não informado' }}</p>
                                         <Badge :variant="row.notificacao?.email ? 'default' : 'outline'">
                                             {{ row.notificacao?.email ? 'Ativo' : 'Inativo' }}
                                         </Badge>
@@ -51,7 +74,7 @@ const emit = defineEmits(['onEdit']);
                                 <Column>
                                     <strong>Número</strong>
                                     <Row justify-content="space-between" align-items="center" gap="5px">
-                                        <p>{{ row?.email || 'Não informado' }}</p>
+                                        <p>{{ row?.whatsapp || 'Não informado' }}</p>
                                         <Badge :variant="row.notificacao?.whatsapp ? 'default' : 'outline'">
                                             {{ row.notificacao?.whatsapp ? 'Ativo' : 'Inativo' }}
                                         </Badge>
@@ -63,26 +86,13 @@ const emit = defineEmits(['onEdit']);
                     </Popover>
                 </TableCell>
                 <TableCell>
-                    <Row gap="10px" align-items="center" justify-content="flex-end" >
-                        <Popover>
-                            <PopoverTrigger as-child>
-                                <Button variant="outline" size="sm">
-                                    <Icon icon="ph:user" />
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent>
-                                <div class="text-muted-foreground text-xs grid grid-cols-2 gap-2">
-                                    <Column>
-                                        <strong>Avalista</strong>
-                                        <p>{{ row?.avalista || 'Não informado' }}</p>
-                                    </Column>
-                                    <Column>
-                                        <strong>Data de Nascimento</strong>
-                                        <p>{{ Utils.formatDateToBR(row?.dataNascimento) || '-' }}</p>
-                                    </Column>
-                                </div>
-                            </PopoverContent>
-                        </Popover>
+                    {{ row?.avalista || '-' }}
+                </TableCell>
+                <TableCell>
+                    {{ Utils.formatDateToBR(row?.dataNascimento) || '-' }}
+                </TableCell>
+                <TableCell>
+                    <Row gap="10px" align-items="center" justify-content="flex-end">
                         <Popover v-if="row?.endereco">
                             <PopoverTrigger as-child>
                                 <Button variant="outline" size="sm">
@@ -106,6 +116,31 @@ const emit = defineEmits(['onEdit']);
                                 </div>
                             </PopoverContent>
                         </Popover>
+                        <Popover>
+                            <PopoverTrigger>
+                                <Button @click="handleListAnexos(row)" variant="outline" size="sm">
+                                    <Icon icon="ph:identification-badge" />
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent>
+                                <Badge variant="success" class=" w-full mb-4 ">
+                                    <div class="text-foreground text-xs w-full ">
+                                        <Row align-items="center" justify-content="space-between" gap="0.5rem"
+                                            class="w-full flex items-center ">
+                                            <h3 class="font-bold w-full text-balance text-secondary-foreground">
+                                                Upload de Documento
+                                            </h3>
+                                            <Button class="p-1 h-fit" @click="handlOpenDialogUpload(row)"
+                                                variant="outline" size="sm">
+                                                <Icon icon="lucide:upload" />
+                                            </Button>
+                                        </Row>
+                                    </div>
+                                </Badge>
+
+                                <CadastrosDownloadList v-if="listAnexos.length > 0" @fetch-data="handleListAnexos(row)" :data="listAnexos" />
+                            </PopoverContent>
+                        </Popover>
                         <TooltipProvider>
                             <Tooltip>
                                 <TooltipTrigger as-child>
@@ -118,6 +153,10 @@ const emit = defineEmits(['onEdit']);
                                 </TooltipContent>
                             </Tooltip>
                         </TooltipProvider>
+
+                        <DialogUploadArquivo v-if="dialogUploadOpen" :item="itemSelecionado"
+                            :anexo-origem="AnexoOrigemLocal.CADASTRO.value" @fetch-data="handleListAnexos(row)"
+                            v-model="dialogUploadOpen" titulo="Upload de documento" />
                     </Row>
                 </TableCell>
             </TableRow>

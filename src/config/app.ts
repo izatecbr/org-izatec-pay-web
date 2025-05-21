@@ -1,3 +1,6 @@
+import { TOKEN_STORAGE_KEY } from "../constants/storage/token"
+import Utils from "../utils"
+
 interface IDashboardMenus {
   title: string
   icon: string
@@ -6,19 +9,11 @@ interface IDashboardMenus {
   hidden?: boolean
 }
 
+const cobrancaAllowed = Utils.jwtToObject(localStorage.getItem(TOKEN_STORAGE_KEY))?.compensacaoManual
+
 export const SIDEBAR_EXPAND_WIDTH = 280;
 export const SIDEBAR_COLLAPSED_WIDTH = 72;
 export const APP_MENU: Record<string, { name: string, routes: IDashboardMenus[] }> = {
-  /* home: {
-    name: 'Consulta',
-    routes: [
-      {
-        title: 'Dashboard',
-        icon: 'Home',
-        path: 'home',
-      },
-    ],
-  }, */
   main: {
     name: 'Operacional',
     routes: [
@@ -27,11 +22,13 @@ export const APP_MENU: Record<string, { name: string, routes: IDashboardMenus[] 
         icon: 'Receipt',
         path: 'pagamentos',
       },
-      {
-        title: 'Cobranças',
-        icon: 'CalendarClock',
-        path: 'cobrancas',
-      },
+      ...(cobrancaAllowed ? [] : [
+        {
+          title: 'Cobranças',
+          icon: 'CalendarClock',
+          path: 'cobrancas',
+        }
+      ]),
       {
         path: 'despesas',
         title: 'Despesas',
@@ -56,20 +53,25 @@ export const APP_MENU: Record<string, { name: string, routes: IDashboardMenus[] 
         icon: 'Users',
         description: 'Cadastros'
       },
-
     ],
   },
-  /*settings: {
+  gerencial: {
     name: 'Gerencial',
     routes: [
       {
-        title: 'Consultas',
-        icon: 'Search',
-        path: 'home',
+        title: 'Recebiveis',
+        icon: 'ChartSpline',
+        path: 'recebiveis',
+      },
+      {
+        title: 'Obrigações',
+        icon: 'Calendar',
+        path: 'obrigacoes',
       },
     ],
-  }, */
+  },
 };
+
 
 export const globalSearch = {
 

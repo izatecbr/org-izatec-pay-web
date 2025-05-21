@@ -1,7 +1,8 @@
 export const DespesasVariant: any = {
     "Moradia": [
         "Aluguel",
-        "Água",
+        "Água Encanada",
+        "Água Mineral",
         "Condomínio",
         "Conservação",
         "Energia",
@@ -16,9 +17,11 @@ export const DespesasVariant: any = {
         "Limpeza"
     ],
     "Transporte": [
-        "Combustível",
+        "Aquisição",
         "Locação",
-        "Revisão"
+        "Combustível",
+        "Revisão",
+        "Infrações"
     ],
     "Lazer": [
         "Entretenimento",
@@ -33,10 +36,19 @@ export const DespesasVariant: any = {
         "Transporte",
         "Vestuário"
     ],
+    "Saúde": [
+        "Academia",
+        "Personal",
+        "Alimentação",
+        "Suplementação",
+        "Nutrição"
+    ],
     "Negócios": [
         "Acessórios",
         "Aluguel",
-        "Água",
+        "Água Encanada",
+        "Água Mineral",
+        "Cortesia",
         "Conservação",
         "Contabilidade",
         "Energia",
@@ -45,9 +57,14 @@ export const DespesasVariant: any = {
         "Gás",
         "Impostos",
         "Internet",
+        "Infraestrutura",
         "Mercadorias",
+        "Publicidade",
         "Refeição",
+        "Repasse",
+        "Serviços",
         "Suprimentos",
+        "Telefonia",
         "Terceiros",
         "Transporte"
     ]

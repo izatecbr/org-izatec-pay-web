@@ -13,7 +13,7 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      redirect: '/admin/home',
+      redirect: '/admin/pagamentos',
     },
     {
       path: '/login',
@@ -26,7 +26,7 @@ const router = createRouter({
     {
       path: '/admin',
       component: AdminLayoutVue,
-      redirect: '/admin/home',
+      redirect: '/admin/pagamentos',
       meta: {
         title: 'Admin',
         requiresAuth: true,
@@ -47,6 +47,24 @@ const router = createRouter({
           component: () => import('@/views/pagamentos/Index.vue'),
           meta: {
             title: 'Pagamentos',
+            requiresAuth: true,
+          } as RouteMeta & IRouteMeta,
+        },
+        {
+          path: 'obrigacoes',
+          name: 'obrigacoes',
+          component: () => import('@/views/gerencial/obrigacoes/Index.vue'),
+          meta: {
+            title: 'Obrigacoes',
+            requiresAuth: true,
+          } as RouteMeta & IRouteMeta,
+        },
+        {
+          path: 'recebiveis',
+          name: 'recebiveis',
+          component: () => import('@/views/gerencial/recebiveis/Index.vue'),
+          meta: {
+            title: 'Recebiveis',
             requiresAuth: true,
           } as RouteMeta & IRouteMeta,
         },
@@ -83,6 +101,7 @@ const router = createRouter({
           component: () => import('@/views/cobrancas/Index.vue'),
           meta: {
             title: 'Cobranças',
+            requiresCompensacaoManual: true,
             requiresAuth: true,
           } as RouteMeta & IRouteMeta,
         },
@@ -149,6 +168,14 @@ router.beforeEach((to, from, next) => {
     if (!decodedToken || decodedToken.exp * 1000 < Date.now()) {
       localStorage.removeItem(TOKEN_STORAGE_KEY);
       return next({ name: 'login' });
+    }
+  }
+
+  if (to.meta.requiresCompensacaoManual) {
+    const cobrancaAllowed = Utils.jwtToObject(localStorage.getItem(TOKEN_STORAGE_KEY))?.compensacaoManual
+
+    if (cobrancaAllowed) {
+      return next({ name: 'pagamentos' })
     }
   }
 

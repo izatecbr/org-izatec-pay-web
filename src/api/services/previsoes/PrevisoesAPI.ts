@@ -28,7 +28,7 @@ export default class PrevisoesAPI {
         return this.http.post(`${BASE_URL}`, payload)
     }
 
-    listarDespesas(id: number): Promise<AppResponse<any>>{
+    listarDespesas(id: number): Promise<AppResponse<any>> {
         return this.http.get(`${BASE_URL}/${id}/despesas`)
     }
 
@@ -43,6 +43,18 @@ export default class PrevisoesAPI {
     statusPagamento(id: any): Promise<any> {
         return this.http.get(`${BASE_URL}/pagamentos/${id}/status`)
     }
+
+    gerarDespesaManual(id: any): Promise<any> {
+        return this.http.put(`${BASE_URL}/${id}/despesas`)
+    }
+
+    cancelamento(id: any, motivo: string): Promise<any> {
+        return this.http.patch(`${BASE_URL}/${id}/cancelamento`, {
+            motivo
+        })
+    }
+
+
 
 
 

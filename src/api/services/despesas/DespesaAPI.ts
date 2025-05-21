@@ -24,4 +24,9 @@ export default class DespesasAPI {
         return this.http.patch(`${BASE_URL}/${id}/compensacao/manual`, payload)
     }
 
+    quitacaoManual(payload: any, id: number): Promise<any> {
+        return this.http.patch(`${BASE_URL}/${id}/quitacao/manual`, payload)
+    }
+
+
 }

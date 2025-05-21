@@ -8,6 +8,7 @@ import NotificacoesAPI from "./services/notificacoes/NotificacoesAPI"
 import PagamentosAPI from "./services/pagamentos/PagamentosAPI"
 import PublicPagamentosAPI from "./services/pagamentos/PublicPagamentosAPI"
 import PrevisoesAPI from "./services/previsoes/PrevisoesAPI"
+import PublicAPI from "./services/public/PublicAPI"
 
 export interface IServices {
     previsoes: PrevisoesAPI,
@@ -17,11 +18,12 @@ export interface IServices {
     publicPagamentos: PublicPagamentosAPI,
     cadastros: CadastroAPI,
     notificacoes: NotificacoesAPI,
-    despesas: DespesasAPI
+    despesas: DespesasAPI,
+    publico: PublicAPI
 }
 
 export const useHttpClient = () => {
-    const API_BASE_URL =  import.meta.env.VITE_API_URL
+    const API_BASE_URL = import.meta.env.VITE_API_URL
 
     const api = axios.create({
         baseURL: API_BASE_URL,
@@ -78,6 +80,7 @@ export const useAPI = () => {
         cadastros: new CadastroAPI(api),
         notificacoes: new NotificacoesAPI(api),
         despesas: new DespesasAPI(api),
+        publico: new PublicAPI(api)
     }
 
     return services

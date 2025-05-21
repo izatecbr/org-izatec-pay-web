@@ -16,4 +16,8 @@ export default class PublicPagamentosAPI {
     conteudo(id: number): Promise<any> {
         return this.http.get(`${BASE_URL}/${id}/conteudo`)
     }
+
+    pdf(id: number): Promise<any> {
+        return this.http.get(`${BASE_URL}/${id}/titulo-cobranca`, { responseType: 'arraybuffer' })
+    }
 }

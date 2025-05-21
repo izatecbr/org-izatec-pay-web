@@ -24,5 +24,15 @@ export default class CobrancaAPI {
         return this.http.post(`${BASE_URL}`, payload)
     }
 
+    gerarCobrancaManual(id: any): Promise<any> {
+        return this.http.put(`${BASE_URL}/${id}/pagamentos`)
+    }
+
+    cancelamento(id: any, motivo: string): Promise<any> {
+        return this.http.patch(`${BASE_URL}/${id}/cancelamento`, {
+            motivo
+        })
+    }
+
 
 }

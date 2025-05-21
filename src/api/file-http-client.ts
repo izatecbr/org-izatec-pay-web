@@ -1,11 +1,15 @@
 import axios from "axios"
 import { TOKEN_STORAGE_KEY } from "../constants/storage/token"
+import AnexosAPI from "./services/anexos/AnexosAPI"
 import PagamentosAPI from "./services/pagamentos/PagamentosAPI"
 import PublicPagamentosAPI from "./services/pagamentos/PublicPagamentosAPI"
+import PublicAPI from "./services/public/PublicAPI"
 
 export interface IServices {
     pagamentos: PagamentosAPI,
     publicPagamentos: PublicPagamentosAPI,
+    publico: PublicAPI,
+    anexos: AnexosAPI
 }
 
 export const useFilesHttpClient = () => {
@@ -23,7 +27,7 @@ export const useFilesHttpClient = () => {
             if (isNotPublicRoute) {
                 req.headers['Authorization'] = token;
             }
-            req.headers["Content-type"] = "application/json"
+            //req.headers["Content-type"] = "application/json"
 
             return req
         },
@@ -39,6 +43,8 @@ export const useFilesAPI = () => {
     const services: IServices = {
         pagamentos: new PagamentosAPI(api),
         publicPagamentos: new PublicPagamentosAPI(api),
+        publico: new PublicAPI(api),
+        anexos: new AnexosAPI(api)
     }
 
     return services

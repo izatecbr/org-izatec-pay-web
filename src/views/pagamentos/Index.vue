@@ -14,7 +14,7 @@ import { useResponsive } from "@/composables/useResponsive";
 import { BadgeVariant } from '@/constants/ui/badge-variants.interface';
 import Utils from '@/utils/index';
 import { Icon } from '@iconify/vue';
-import { onMounted, ref,watch } from "vue";
+import { onMounted, ref, watch } from "vue";
 
 
 const { toast } = useToast()
@@ -122,8 +122,8 @@ watch(date, async ()=>{
       </Row>
 
       <div class="w-full">
-        <PagamentosTable class="w-full" :data="pagamentosData" v-if="isDesktop" />
-        <ScrollArea class="max-h-[70vh] w-full overflow-y-auto" v-else>
+        <PagamentosTable @fetch-data="fetchPagamentos" class="w-full" :data="pagamentosData" v-if="isDesktop" />
+        <ScrollArea class="max-h-[84dvh] w-full overflow-y-auto" v-else>
           <PagamentosList class="w-full" :data="pagamentosData" />
         </ScrollArea>
       </div>

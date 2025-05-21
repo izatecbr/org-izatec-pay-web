@@ -15,6 +15,7 @@ Este sistema foi desenvolvido para simplificar a gestão de pagamentos, oferecen
 ## Template
 - [vue-shadcn-dashboard](https://github.com/faturputro/vue-shadcn-dashboard)
 
+
 # Setup Inical
 
 ``` bash
@@ -36,17 +37,6 @@ Na pasta `src/api` estão todos os services que acessam os recursos do backend, 
 
 ```
 VITE_API_URL=http://localhost:8080
-```
-
-# Acesso
-
-* URL: http://localhost:5173
-
-```
-{
-  "usuario": "84306987000167",
-  "senha": "8430"
-}
 ``` 
 
 # Tecnologias

@@ -80,13 +80,13 @@ onMounted(async () => {
     await fetchPrevisoes()
 })
 
-watch(date, async ()=>{
-  await fetchPrevisoes()
+watch(date, async () => {
+    await fetchPrevisoes()
 })
 
 const changeStatus = (value: any) => {
-  status.value = value
-  fetchPrevisoes()
+    status.value = value
+    fetchPrevisoes()
 }
 </script>
 
@@ -95,6 +95,9 @@ const changeStatus = (value: any) => {
         <page-header title="Previsões" />
 
         <Tabs :default-value="status" class="space-y-4">
+            <Row align-items="center" flex-wrap="wrap" gap="5px">
+                <CadastrosBadgeSelecionado />
+            </Row>
             <Row flex-wrap="wrap" gap="10px" justify-content="space-between" class="w-full relative">
                 <TabsList>
                     <TabsTrigger @click="changeStatus(CobrancaStatusVariant.ATIVA.value)"
@@ -109,47 +112,49 @@ const changeStatus = (value: any) => {
                         :value="CobrancaStatusVariant.QUITADA.value">
                         Quitada
                     </TabsTrigger>
+                    <TabsTrigger @click="changeStatus(CobrancaStatusVariant.CANCELADA.value)"
+                        :value="CobrancaStatusVariant.CANCELADA.value">
+                        Canceladas
+                    </TabsTrigger>
 
-                </TabsList> 
-             
+                </TabsList>
+
                 <Row gap="10px" flex-wrap="wrap">
-            <Row flex-wrap="wrap" gap="10px" justify-content="space-between" class="w-full mb-4">
-                <Row align-items="center" flex-wrap="wrap" gap="5px">
-                    <CadastrosBadgeSelecionado />
-                </Row>
+                    <Row flex-wrap="wrap" gap="10px" justify-content="space-between" class="w-full mb-4">
 
-                <Row gap="10px">
-                    <Row gap="2px">
-                        <DatePicker :loading="loading" v-model="date" />
-                       <!-- <Button v-if="date" @click="clearDataInput()" variant="destructive">
+
+                        <Row gap="10px">
+                            <Row gap="2px">
+                                <DatePicker :loading="loading" v-model="date" />
+                                <!-- <Button v-if="date" @click="clearDataInput()" variant="destructive">
                             <Icon class="text-lg" icon="ph:calendar-slash" />
                         </Button> -->
-                    </Row>
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger as-child>
-                                <Button variant="outline" @click="toggleSheetFilterCadastros()">
-                                    <Icon class="text-lg" icon="mdi:user-search" />
+                            </Row>
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger as-child>
+                                        <Button variant="outline" @click="toggleSheetFilterCadastros()">
+                                            <Icon class="text-lg" icon="mdi:user-search" />
+                                        </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>Filtrar coteúdo de acordo com um sacado.</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                            <PrevisoesSheet titulo="Nova Previsão" v-model="sheetOpen">
+                                <Button @click="sheetOpen = true" variant="outline">
+                                    Novo
+                                    <Icon class="ml-2 text-lg" icon="lucide:plus" />
                                 </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p>Filtrar coteúdo de acordo com um sacado.</p>
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
-                    <PrevisoesSheet titulo="Nova Previsão" v-model="sheetOpen">
-                        <Button @click="sheetOpen = true" variant="outline">
-                            Novo
-                            <Icon class="ml-2 text-lg" icon="lucide:plus" />
-                        </Button>
-                        <template #form>
-                            <PrevisoesForm v-model="form" :loading="loadingForm"
-                                @on-submit="(payload: any) => submit(payload)" />
-                        </template>
-                    </PrevisoesSheet>
+                                <template #form>
+                                    <PrevisoesForm v-model="form" :loading="loadingForm"
+                                        @on-submit="(payload: any) => submit(payload)" />
+                                </template>
+                            </PrevisoesSheet>
+                        </Row>
+                    </Row>
                 </Row>
-            </Row>
-        </Row>
 
             </Row>
         </Tabs>
@@ -158,7 +163,7 @@ const changeStatus = (value: any) => {
 
 
         <div class="w-full">
-            <PrevisoesTable class="w-full" :data="data" v-if="isDesktop" />
+            <PrevisoesTable @fetch-data="fetchPrevisoes()" class="w-full" :data="data" v-if="isDesktop" />
             <ScrollArea class="max-h-[70vh] w-full overflow-y-auto" v-else>
                 <PrevisoesList class="w-full" :data="data" />
             </ScrollArea>

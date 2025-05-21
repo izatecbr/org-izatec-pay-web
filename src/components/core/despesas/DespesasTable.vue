@@ -1,26 +1,56 @@
 <script lang="ts" setup>
+import { useFilesAPI } from '@/api/file-http-client';
+import ComprovanteDownloadList from '@/components/common/arquivos/ComprovanteDownloadList.vue';
+import DialogUploadArquivo from '@/components/common/dialogs/DialogUploadArquivo.vue';
 import Badge from '@/components/ui/badge/Badge.vue';
 import Button from '@/components/ui/button/Button.vue';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { AnexoOrigemLocal } from '@/constants/app/anexo-origem-local';
 import { BadgeVariant } from '@/constants/ui/badge-variants.interface';
 import Utils from '@/utils';
 import { Icon } from '@iconify/vue';
 import { ref } from 'vue';
 import Column from '../Column.vue';
 import PrevisoesDialogCompensacao from '../previsoes/PrevisoesDialogCompensacao.vue';
+import PrevisoesDialogQuitacao from '../previsoes/PrevisoesDialogQuitacao.vue';
+import Row from '../Row.vue';
 
 const emtis = defineEmits(['fetchData'])
 const props = defineProps(['data'])
 
+const { anexos } = useFilesAPI();
+
 const dialogOpen = ref(false)
+const dialogQuitacaoOpen = ref(false)
 const itemSelecionado = ref(null)
+const dialogUploadOpen = ref(false)
+
+
+const listAnexos = ref([])
 
 const handleOpenDialogCompensacao = (item: any) => {
     itemSelecionado.value = item
     dialogOpen.value = true
 }
+
+
+const handlOpenDialogUpload = (item: any) => {
+    itemSelecionado.value = item
+    dialogUploadOpen.value = true
+}
+
+const handleOpenDialogQuitacao = (item: any) => {
+    itemSelecionado.value = item
+    dialogQuitacaoOpen.value = true
+}
+
+const handleListAnexos = async (item: any) => {
+    const { data } = await anexos.list(item.id, AnexoOrigemLocal.DESPESA.value)
+    listAnexos.value = data.body || []
+}
+
 
 
 </script>
@@ -77,14 +107,14 @@ const handleOpenDialogCompensacao = (item: any) => {
                     <Popover>
                         <PopoverTrigger>
                             <Button variant="outline" size="sm">
-                                <Icon icon="ph:dots-three" />
+                                <Icon icon="ph:list-bullets" />
                             </Button>
                         </PopoverTrigger>
                         <PopoverContent>
                             <div class="text-muted-foreground text-xs grid grid-cols-2 gap-2">
                                 <Column>
-                                    <strong>Dt. Gerção</strong>
-                                    <p>{{ Utils.formatDateToBR(row.dataGeracao?.dataHora) || '-'}}</p>
+                                    <strong>Dt. Geração</strong>
+                                    <p>{{ Utils.formatDateToBR(row.dataGeracao?.dataHora) || '-' }}</p>
                                 </Column>
                                 <Column>
                                     <strong>Prox. Vencto.</strong>
@@ -109,10 +139,60 @@ const handleOpenDialogCompensacao = (item: any) => {
                             </div>
                         </PopoverContent>
                     </Popover>
+
+                    <Popover v-if="row?.compensacao">
+                        <PopoverTrigger>
+                            <Button @click="handleListAnexos(row)" variant="outline" size="sm">
+                                <Icon icon="lucide:receipt" />
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent>
+                            <Badge variant="success" class="col-span-2 w-full px-0 pt-0">
+                                <div class=" text-foreground text-xs grid grid-cols-2 w-full gap-2">
+                                    <Row align-items="center" justify-content="space-between" gap="0.5rem"
+                                        class="col-span-2 w-full py-1 px-2 bg-green-500/50">
+                                        <h3 class="font-bold text-balance text-secondary-foreground">
+                                            PAGAMENTO
+                                        </h3>
+                                        <TooltipProvider v-if="row?.compensacao">
+                                            <Tooltip>
+                                                <TooltipTrigger as-child>
+                                                    <Button class="p-1 h-fit" @click="handlOpenDialogUpload(row)"
+                                                        variant="outline" size="sm">
+                                                        <Icon icon="lucide:upload" />
+                                                    </Button>
+                                                </TooltipTrigger>
+                                                <TooltipContent>Upload de Comprovante</TooltipContent>
+                                            </Tooltip>
+                                        </TooltipProvider>
+                                    </Row>
+                                    <Column class=" px-2">
+                                        <strong>Data</strong>
+                                        <p>{{ Utils.formatDateToBR(row.compensacao.data?.dataHora) || '' }}</p>
+                                    </Column>
+                                    <Column class=" px-2">
+                                        <strong>Comprovante</strong>
+                                        <p>{{ row?.compensacao.comprovante || '' }}</p>
+                                    </Column>
+                                    <Column class=" px-2">
+                                        <strong>R$ Pago</strong>
+                                        <p>{{ Utils.formatToBRL(row?.valor.pago) || '' }}</p>
+                                    </Column>
+                                    <Column class=" px-2">
+                                        <strong>Observação</strong>
+                                        <p>{{ row?.compensacao.observacao || '' }}</p>
+                                    </Column>
+                                </div>
+                            </Badge>
+                            <div class="mt-2">
+                                <ComprovanteDownloadList :data="listAnexos" />
+                            </div>
+                        </PopoverContent>
+                    </Popover>
                     <Popover v-if="row?.endereco">
                         <PopoverTrigger>
                             <Button variant="outline" size="sm">
-                                <Icon icon="ph:house" />
+                                <Icon icon="ph:map-pin-line" />
                             </Button>
                         </PopoverTrigger>
                         <PopoverContent>
@@ -137,6 +217,29 @@ const handleOpenDialogCompensacao = (item: any) => {
 
                     <PrevisoesDialogCompensacao v-if="dialogOpen" @submit="emtis('fetchData')" :item="itemSelecionado"
                         v-model="dialogOpen" />
+
+
+                    <TooltipProvider v-if="row?.valor?.amortizado && row.status.id === BadgeVariant.GERADO.value">
+                        <Tooltip>
+                            <TooltipTrigger as-child>
+                                <Button @click="handleOpenDialogQuitacao(row)" variant="outline" size="sm">
+                                    <Icon icon="ph:checks" />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>Quitar pagamento manualmente.</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+
+                    <DialogUploadArquivo v-if="dialogUploadOpen" :item="itemSelecionado"
+                        :anexo-origem="AnexoOrigemLocal.DESPESA.value" @fetch-data="handleListAnexos(row)"
+                        v-model="dialogUploadOpen" />
+
+
+                    <PrevisoesDialogQuitacao v-if="dialogQuitacaoOpen" @submit="emtis('fetchData')"
+                        :item="itemSelecionado" v-model="dialogQuitacaoOpen" />
+
 
                 </TableCell>
 

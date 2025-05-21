@@ -9,6 +9,7 @@ import {
 import { useResponsive } from '@/composables/useResponsive'
 import { cn } from '@/lib/utils'
 import { addDays, format } from 'date-fns'
+import { ptBR } from 'date-fns/locale'
 import { Calendar as CalendarIcon } from 'lucide-vue-next'
 import { computed } from 'vue'
 
@@ -54,7 +55,7 @@ const dateModel: any = computed<any>({
           :variant="'outline'"
           :class="
             cn(
-              'w-[260px] justify-start text-left font-normal',
+              'w-[330px] justify-start text-left font-normal',
               !dateModel?.start && 'text-muted-foreground',
             )
           "
@@ -64,11 +65,12 @@ const dateModel: any = computed<any>({
             {{
               dateModel?.start
                 ? dateModel?.end
-                  ? `${format(dateModel.start, 'LLL dd, y')} - ${format(
+                  ? `${format(dateModel.start, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })} - ${format(
                       dateModel.end,
-                      'LLL dd, y',
+                      "dd 'de' MMMM 'de' yyyy",
+                      { locale: ptBR },
                     )}`
-                  : format(dateModel.start, 'LLL dd, y')
+                  : format(dateModel.start, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })
                 : 'Selecionar data'
             }}
           </span>

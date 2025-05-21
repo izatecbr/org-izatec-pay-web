@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { useAPI } from "@/api/http-client";
 import DespesasForm from "@/components/core/despesas/DespesasForm.vue";
+import DespesasList from "@/components/core/despesas/DespesasList.vue";
 import DespesasSheet from "@/components/core/despesas/DespesasSheet.vue";
 import DespesasTable from "@/components/core/despesas/DespesasTable.vue";
 import Row from '@/components/core/Row.vue';
 import { Button } from '@/components/ui/button';
 import { DatePicker } from "@/components/ui/date-picker";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from "@/components/ui/toast";
 import { useResponsive } from "@/composables/useResponsive";
@@ -116,10 +118,10 @@ watch(date, async () => {
             </Row>
 
             <div class="w-full">
-                <DespesasTable @fetch-data="fetchDespesas"  class="w-full" :data="despesasData"  />
-                <!---<ScrollArea class="max-h-[70vh] w-full overflow-y-auto" v-else>
-                    <PagamentosList class="w-full" :data="despesasData" />
-                </ScrollArea> -->
+                <DespesasTable v-if="isDesktop" @fetch-data="fetchDespesas" class="w-full" :data="despesasData" />
+                <ScrollArea class="max-h-[70vh] w-full overflow-y-auto" v-else>
+                    <DespesasList class="w-full" :data="despesasData" />
+                </ScrollArea>
             </div>
         </Tabs>
     </div>

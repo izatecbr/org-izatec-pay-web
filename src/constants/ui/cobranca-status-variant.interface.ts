@@ -15,11 +15,15 @@ export const CobrancaStatusVariant: any = {
         label: 'Quitada',
         color: 'bg-teal-500 text-white',
     },
-
     ENCERRADA: {
         value: 'ENCERRADA',
         label: 'Encerrada',
         color: 'bg-gray-500 text-white',
+    },
+    CANCELADA: {
+        value: 'CANCELADA',
+        label: 'Cancelada',
+        color: 'bg-red-500 text-white',
     },
 } as const;
 

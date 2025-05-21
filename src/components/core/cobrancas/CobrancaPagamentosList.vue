@@ -8,7 +8,7 @@ const props = defineProps(['data'])
 </script>
 
 <template>
-  <ScrollArea v-if="data.length > 0" class="max-h-[70vh] w-full overflow-y-auto">
+  <ScrollArea v-if="data.length > 0" class="max-h-[84dvh] w-full overflow-y-auto">
     <Column gap="10px" >
       <CobrancaPagamentosListItem v-for="item in data" :key="item.id" :item="item" />
     </Column>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useFilesAPI } from '@/api/file-http-client';
 import { useAPI } from '@/api/http-client';
 import CadastrosForm from '@/components/core/cadastros/CadastrosForm.vue';
 import CadastrosList from '@/components/core/cadastros/CadastrosList.vue';
@@ -11,6 +12,7 @@ import ScrollArea from '@/components/ui/scroll-area/ScrollArea.vue';
 import { Tabs } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/toast';
 import { useResponsive } from '@/composables/useResponsive';
+import { AnexoOrigemLocal } from '@/constants/app/anexo-origem-local';
 import { CobrancaStatusVariant } from '@/constants/ui/cobranca-status-variant.interface';
 import type { FormMode } from '@/types';
 import { Icon } from '@iconify/vue';
@@ -19,6 +21,7 @@ import { onMounted, ref } from 'vue';
 const { isDesktop } = useResponsive();
 const { toast } = useToast();
 const { cadastros } = useAPI();
+const { anexos } = useFilesAPI()
 
 const date = ref({
     start: new Date(),
@@ -31,6 +34,7 @@ const status = ref(CobrancaStatusVariant.ATIVA.value);
 const loading = ref(false);
 const loadingForm = ref(false);
 const form = ref<any>(null);
+const anexoSelecionado = ref<any>(null);
 const data = ref([]);
 
 const fetchCadatros = async () => {
@@ -42,19 +46,34 @@ const fetchCadatros = async () => {
 
 const submit = async (payload: any) => {
     loadingForm.value = true;
-    const { status, success } = await cadastros.salvar(payload, payload?.id);
+    const { status, success, body } = await cadastros.salvar(payload, payload?.id);
     toast({
         title: status.message,
         description: status?.suggestion || '',
         variant: success ? 'default' : 'destructive',
         duration: 1300,
     });
-    if (success) {
+    if (success && body) {
+        if (anexoSelecionado?.value) {
+            await uploadArquivo(body)
+        }
         closeForm();
         fetchCadatros();
     }
     loadingForm.value = false;
 };
+
+const uploadArquivo = async (id: number) => {
+    try {
+        await anexos.upload(anexoSelecionado.value, id, AnexoOrigemLocal.CADASTRO.value);
+    } catch (error) {
+        toast({
+            title: 'Erro',
+            description: 'Falha ao enviar o documento. Tente novamente.',
+            variant: 'destructive',
+        });
+    }
+}
 
 const resetForm = () => {
     form.value = null;
@@ -111,14 +130,15 @@ onMounted(async () => {
                         <Icon class="ml-2 text-lg" icon="lucide:plus" />
                     </Button>
                     <template #form>
-                        <CadastrosForm v-if="sheetOpen" v-model="form" :loading="loadingForm" @on-submit="submit" />
+                        <CadastrosForm v-if="sheetOpen" v-model="form" v-model:anexo="anexoSelecionado"
+                            :loading="loadingForm" @on-submit="submit" />
                     </template>
                 </CadastrosSheet>
             </Row>
 
             <div class="w-full">
                 <CadastrosTable @on-edit="handleEdit" :data="data" v-if="isDesktop" />
-                <ScrollArea class="max-h-[70vh] w-full overflow-y-auto" v-else>
+                <ScrollArea class="max-h-[84dvh] w-full overflow-y-auto" v-else>
                     <CadastrosList class="w-full" :data="data" />
                 </ScrollArea>
             </div>

@@ -69,7 +69,7 @@ const notificar = async (id: any, tipo: string) => {
                 <TableCell>{{ Utils.formatDateToBR(row.dataVencimento?.dataHora) }}</TableCell>
                 <TableCell>
                     <Badge :variant="BadgeVariant[row.status?.id]?.value || 'default'" class="mr-2">
-                        {{ row.status?.id || '-' }}
+                        {{ row.status?.nome || '-' }}
                     </Badge>
                 </TableCell>
                 <!--<TableCell>{{ row.codigoExterno || '-' }}</TableCell> -->

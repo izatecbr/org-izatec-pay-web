@@ -11,8 +11,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/toast/use-toast';
 import { TOKEN_STORAGE_KEY } from "@/constants/storage/token";
+import { useAppStore } from '@/stores/app';
 import { Icon } from "@iconify/vue";
 import { toTypedSchema } from '@vee-validate/zod';
+import {
+  MoonStar,
+  Sun
+} from 'lucide-vue-next';
 import { useForm } from 'vee-validate';
 import { ref } from "vue";
 import { useRouter } from "vue-router";
@@ -24,6 +29,7 @@ const showPassword = ref(false);
 const { toast } = useToast()
 const { acesso } = useAPI()
 const router = useRouter();
+const store = useAppStore();
 
 const loading = ref(false)
 const formSchema = toTypedSchema(z.object({
@@ -34,6 +40,11 @@ const formSchema = toTypedSchema(z.object({
 const form = useForm({
   validationSchema: formSchema,
 });
+
+
+const toggleMode = () => {
+  store.toggleTheme();
+};
 
 const onSubmit = form.handleSubmit(async (val) => {
   loading.value = true
@@ -68,13 +79,19 @@ const onSubmit = form.handleSubmit(async (val) => {
             <h2 class=" text-muted-foreground text-5xl font-extrabold ">PAY</h2>
           </Row>
           <span class=" text-muted-foreground mr-4 mt-5 w-[16rem]">
-            Lorem ipsum dolor sit amet, consectetur adipisicing elit. Eum cumque ullam ex illum soluta ad placeat
-            animi fugiat, aliquam, doloremque quis esse odit tenetur labore velit porro ducimus quas quo.</span>
+            Gestão Simplificada de Pagamentos</span>
         </Column>
       </Row>
     </div>
     <div class="flex-1 px-2 mx-4 flex items-center justify-center">
-      <Card class="w-[30rem]">
+<div class="relative" >
+<div class="flex w-full items-center justify-end pb-4" >
+        <Button variant="outline" class="border-0 p-[6px] ml-2 w-8 h-8" @click="toggleMode">
+        <Sun v-if="store.isDark" />
+        <MoonStar v-else />
+      </Button>
+</div>
+            <Card class="w-[30rem]">
         <CardHeader>
           <CardTitle class="text-center">Login</CardTitle>
         </CardHeader>
@@ -122,6 +139,7 @@ const onSubmit = form.handleSubmit(async (val) => {
           </div>
         </CardFooter>
       </Card>
+</div>
     </div>
   </main>
 </template>

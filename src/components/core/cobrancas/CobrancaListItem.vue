@@ -58,7 +58,7 @@ const listarPagamentos = async (id: number, titulo: string) => {
                 <Row justify-content="space-between">
                     <h5 class="font-semibold">{{ item.titulo }}</h5>
                     <Row gap="10px">
-                        <Badge :variant="CobrancaStatusVariant[item.status].value" class="mr-2 h-fit">{{ item.status }}</Badge>
+                        <Badge :variant="CobrancaStatusVariant[item.status.id].value" class="mr-2 h-fit">{{ item.status.nome }}</Badge>
                         <CobrancasPagamentosSheet v-model="sheetOpen" :titulo="tituloCobranca">
                             <Button @click="listarPagamentos(item.id, item.titulo)" :loading="loading[item.id]"
                                 variant="outline" size="sm">
@@ -102,18 +102,13 @@ const listarPagamentos = async (id: number, titulo: string) => {
                     <label class="text-xs" for="data-geracao">Dia</label>
                     <p id="data-geracao" class="font-bold">{{ item.negociacao?.diaVencimento }}</p>
                 </Column>
-                <Row justify-content="space-between" class="w-[63%]">
-                    <Column>
-                        <label class="text-xs text-start" for="data-pagamento">Documento</label>
-                        <p id="data-pagamento" class="font-bold text-start">{{ item.sacado?.documento || '-' }}
-                        </p>
-                    </Column>
+            
                     <Column>
                         <label class="text-xs" for="data-pagamento">R$ Cobrado</label>
                         <p id="data-pagamento" class="font-bold">{{ Utils.formatToBRL(item.valorCobrado) }}
                         </p>
                     </Column>
-                </Row>
+            
             </Row>
 
         </CardContent>

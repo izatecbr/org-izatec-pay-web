@@ -4,10 +4,10 @@ import Column from '@/components/core/Column.vue'
 import Row from '@/components/core/Row.vue'
 import { Badge } from '@/components/ui/badge'
 import {
-    Card,
-    CardContent,
-    CardFooter,
-    CardHeader
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader
 } from '@/components/ui/card'
 import { useToast } from '@/components/ui/toast'
 import { CobrancaStatusVariant } from '@/constants/ui/cobranca-status-variant.interface'
@@ -61,8 +61,8 @@ const copy = async (text: string) => {
         <Row justify-content="space-between" align-items="center">
           <h5 class="font-semibold">{{ item.titulo ?? '-' }}</h5>
           <Row gap="10px">
-            <Badge class="h-fit" :variant="CobrancaStatusVariant[item.status].value">
-              {{ CobrancaStatusVariant[item.status].label ?? '-' }}
+            <Badge class="h-fit" :variant="CobrancaStatusVariant[item.status.id].value">
+              {{ item.status?.nome ?? '-' }}
             </Badge>
           </Row>
         </Row>

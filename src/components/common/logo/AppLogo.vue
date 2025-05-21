@@ -11,7 +11,7 @@ const imgUrl = computed(() => store.isDark ? "../../../assets/images/logo-dark.p
     <div class="overflow-hidden w-[22dvw] h-[26dvw]">
         <img 
             class="w-full h-full object-cover object-center" 
-            alt="Iza pay logo" 
+            alt=""
             :src="imgUrl" 
         />
     </div>

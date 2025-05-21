@@ -39,7 +39,6 @@ const toggleMode = () => {
 const logout = () => {
   localStorage.removeItem(TOKEN_STORAGE_KEY);
   router.replace('/login');
-  console.log('oxe')
 };
 
 onMounted(() => {
